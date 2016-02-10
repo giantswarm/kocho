@@ -1,0 +1,39 @@
+#cloud-config
+coreos:
+    update:		
+        reboot-strategy: off
+    etcd2:
+        discovery: {{.DiscoveryUrl}}
+        advertise-client-urls: http://$private_ipv4:2379
+        initial-advertise-peer-urls: http://$private_ipv4:2380
+        listen-client-urls: http://0.0.0.0:2379
+        listen-peer-urls: http://$private_ipv4:2380
+        election-timeout: 5000
+    fleet:
+        etcd_servers: http://$private_ipv4:2379
+        metadata: "{{.Tags}}"
+    units:
+      - name: etcd2.service
+        command: start
+      - name: fleet.service
+        command: start
+        {{if .YochuVersion}}
+      - name: yochu.service
+        command: start
+        enable: true
+        content: |            
+            [Unit]
+            Description=Giant Swarm Yochu
+            Wants=network-online.target
+            After=network-online.target
+            Before=multi-user.target
+            [Service]
+            Type=oneshot
+            ExecStartPre=/usr/bin/mkdir -p /home/core/bin
+            ExecStartPre=/usr/bin/wget --no-verbose https://downloads.giantswarm.io/yochu/{{.YochuVersion}}/yochu -O /home/core/bin/yochu
+            ExecStartPre=/usr/bin/chmod +x /home/core/bin/yochu
+            ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --fleet-version={{.FleetVersion}} --etcd-version={{.EtcdVersion}} --docker-version={{.DockerVersion}}
+            RemainAfterExit=yes
+            [Install]
+            WantedBy=multi-user.target
+        {{end}}

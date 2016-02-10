@@ -1,0 +1,128 @@
+#compdef kocho
+#
+# Completion script for kocho (https://github.com/giantswarm/kocho)
+#
+# Source: https://github.com/giantswarm/kocho/tree/master/completion/zsh/_kocho
+#
+# Authors
+#
+#  * Timo Derstappen (https://github.com/teemow)
+
+local curcontext="$curcontext" state line ret=1
+
+local -a common_ops
+common_ops=(
+  '--help[Show help]'
+  '--version[Print the version and exit]'
+)
+
+local -a _1st_arguments
+_1st_arguments=(
+  'create:Create a new swarm on AWS'
+  'destroy:Destroy a swarm on AWS'
+  'instances:List all the dns names of the instances of a swarm'
+  'status:Status of a swarm'
+  'list:List all existing swarms'
+  'wait-until:Wait until a swarm has a certain status'
+  'dns:Update DNS of a swarm'
+  'kill-instance:Kill instance of a swarm'
+  'help:Show a list of commands or help for one command'
+  'version:Print the version and exit'
+  'etcd-discovery:Print the etcd discovery url of a swarm'
+)
+
+_arguments -C \
+  $common_ops \
+  '1: :->cmds' \
+  '*: :->args' && ret=0
+
+__kocho_cluster () {
+    local expl
+    declare -a cluster
+    cluster=(${(f)"$(_call_program commands kocho list| grep -v "^Name" | awk '{print $1}')"})
+    _describe -t kocho-cluster "Cluster" cluster
+}
+
+case $state in
+  cmds)
+    _describe -t commands 'kocho command' _1st_arguments && ret=0
+    ;;
+
+  args)
+    local -a args
+    args=(
+      $common_ops
+    )
+
+    case $words[2] in
+      (create)
+        local opts
+        opts=(
+          '--certificate:Certificate ARN to use to create aws cluster'
+          '--cluster-size:Number of nodes a cluster should have'
+          '--image:Image version that should be used to create a swarm'
+          '--no-block:Do not wait until the swarm has been started before exiting'
+          '--yochu:Version of Yochu to provision cluster nodes'
+        )
+        _describe -t opts 'Options' opts
+
+        args=(
+          '2:__opts'
+        )
+      ;;
+      (destroy)
+        args=(
+          '2:cluster:__kocho_cluster'
+        )
+      ;;
+      (instances)
+        args=(
+          '2:cluster:__kocho_cluster'
+        )
+      ;;
+      (status)
+        args=(
+          '2:cluster:__kocho_cluster'
+        )
+      ;;
+      (dns)
+        args=(
+          '2:cluster:__kocho_cluster'
+        )
+      ;;
+      (kill-instance)
+        args=(
+          '2:cluster:__kocho_cluster'
+        )
+      ;;
+      (etcd-discovery)
+        args=(
+          '2:cluster:__kocho_cluster'
+        )
+      ;;
+      (help)
+        _describe -t commands 'kocho command' _1st_arguments
+        args=(
+          '2:__commands'
+        )
+      ;;
+
+      *)
+        (( ret )) && _message 'no more arguments'
+      ;;
+    esac
+
+    _arguments $args && ret=0
+
+  ;;
+esac
+
+return ret
+
+# Local Variables:
+# mode: Shell-Script
+# sh-indentation: 2
+# indent-tabs-mode: nil
+# sh-basic-offset: 2
+# End:
+# vim: ft=zsh sw=2 ts=2 et

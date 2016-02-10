@@ -1,0 +1,313 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "Giant Swarm on EC2",
+	"Parameters": {
+		"AmiId": {
+			"Type": "String",
+			"Description": "AmiId of a CoreOS image for the specified instance type and region"
+		},
+		"VpcId": {
+			"Type": "String",
+			"Description": "VpcId of your existing Virtual Private Cloud (VPC)"
+		},
+		"Subnet": {
+			"Type": "CommaDelimitedList",
+			"Description": "The SubnetId in your Virtual Private Cloud (VPC)"
+		},
+		"AZ": {
+			"Type": "CommaDelimitedList",
+			"Description": "The list of AvailabilityZones for your Virtual Private Cloud (VPC)"
+		},
+		"AllowSSHFrom": {
+			"Default": "0.0.0.0/0",
+			"Description": "The net block (CIDR) that SSH is available to.",
+			"Type": "String"
+		},
+		"ClusterSize": {
+			"Default": "1",
+			"Description": "Number of nodes in cluster (1-12).",
+			"MaxValue": "12",
+			"MinValue": "1",
+			"Type": "Number"
+		},
+		"InstanceType": {
+			"AllowedValues": [
+				"t2.nano",
+				"t2.micro",
+				"t2.small",
+				"t2.medium",
+				"t2.large",
+				"m4.large",
+				"m4.xlarge",
+				"m4.2xlarge",
+				"m4.4xlarge",
+				"m4.10xlarge",
+				"m3.medium",
+				"m3.large",
+				"m3.xlarge",
+				"m3.2xlarge",
+				"c4.large",
+				"c4.xlarge",
+				"c4.2xlarge",
+				"c4.4xlarge",
+				"c4.8xlarge",
+				"c3.large",
+				"c3.xlarge",
+				"c3.2xlarge",
+				"c3.4xlarge",
+				"c3.8xlarge",
+				"g2.2xlarge",
+				"g2.8xlarge",
+				"r3.large",
+				"r3.xlarge",
+				"r3.2xlarge",
+				"r3.4xlarge",
+				"r3.8xlarge",
+				"i2.xlarge",
+				"i2.2xlarge",
+				"i2.4xlarge",
+				"i2.8xlarge",
+				"d2.xlarge",
+				"d2.2xlarge",
+				"d2.4xlarge",
+				"d2.8xlarge"
+			],
+			"ConstraintDescription": "Must be a valid EC2 HVM instance type.",
+			"Default": "t2.medium",
+			"Description": "EC2 instance type (t2.medium, etc).",
+			"Type": "String"
+		},
+		"KeyPair": {
+			"Description": "The name of an EC2 Key Pair to allow SSH access to the instance.",
+			"Type": "String"
+		},
+		"CloudConfig": {
+			"Description": "Registry cloud-config configuration (base64)",
+			"Type": "String"
+		},
+		"SSLCertificate": {
+			"Description": "ARN of an SSL Certificate for the cluster",
+			"Type": "String"
+		}
+	},
+	"Resources": {
+		"PublicELBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Public ELB SecurityGroup",
+				"VpcId": {
+					"Ref": "VpcId"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"CidrIp": "0.0.0.0/0"
+				}, {
+					"IpProtocol": "tcp",
+					"FromPort": "443",
+					"ToPort": "443",
+					"CidrIp": "0.0.0.0/0"
+				}],
+				"SecurityGroupEgress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"CidrIp": "0.0.0.0/0"
+				}]
+			}
+		},
+		"PrivateELBSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Private ELB SecurityGroup",
+				"VpcId": {
+					"Ref": "VpcId"
+				},
+				"SecurityGroupIngress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"CidrIp": "0.0.0.0/0"
+				}],
+				"SecurityGroupEgress": [{
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"CidrIp": "0.0.0.0/0"
+				}]
+			}
+		},
+		"InstanceSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Enable cluster communication",
+				"VpcId": {
+					"Ref": "VpcId"
+				},
+				"SecurityGroupIngress": [{
+					"CidrIp": {
+						"Ref": "AllowSSHFrom"
+					},
+					"FromPort": "22",
+					"IpProtocol": "tcp",
+					"ToPort": "22"
+				}, {
+					"IpProtocol": "tcp",
+					"FromPort": "80",
+					"ToPort": "80",
+					"SourceSecurityGroupId": {
+						"Ref": "PublicELBSecurityGroup"
+					}
+				}]
+			}
+		},
+		"IngressSSH": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "InstanceSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "22",
+				"ToPort": "22",
+				"SourceSecurityGroupId": {
+					"Ref": "InstanceSecurityGroup"
+				}
+			}
+		},
+		"Ingress2379": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "InstanceSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "2379",
+				"ToPort": "2379",
+				"SourceSecurityGroupId": {
+					"Ref": "InstanceSecurityGroup"
+				}
+			}
+		},
+		"Ingress2380": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "InstanceSecurityGroup"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "2380",
+				"ToPort": "2380",
+				"SourceSecurityGroupId": {
+					"Ref": "InstanceSecurityGroup"
+				}
+			}
+		},
+		"ElasticLoadBalancerPublic": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Properties": {
+				"Subnets": {
+					"Ref": "Subnet"
+				},
+				"SecurityGroups": [{
+					"Ref": "PublicELBSecurityGroup"
+				}],
+				"Listeners": [{
+					"LoadBalancerPort": "443",
+					"InstancePort": "80",
+					"Protocol": "SSL",
+					"SSLCertificateId": {
+						"Ref": "SSLCertificate"
+					}
+				}, {
+					"LoadBalancerPort": "80",
+					"InstancePort": "80",
+					"Protocol": "TCP"
+				}]
+			}
+		},
+		"ElasticLoadBalancerPrivate": {
+			"Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+			"Properties": {
+				"Subnets": {
+					"Ref": "Subnet"
+				},
+				"Scheme": "internal",
+				"SecurityGroups": [{
+					"Ref": "PrivateELBSecurityGroup"
+				}],
+				"Listeners": [{
+					"LoadBalancerPort": "80",
+					"InstancePort": "80",
+					"Protocol": "TCP"
+				}]
+			}
+		},
+		"ServerAutoScale": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Properties": {
+				"AvailabilityZones": {
+					"Ref": "AZ"
+				},
+				"VPCZoneIdentifier": {
+					"Ref": "Subnet"
+				},
+				"DesiredCapacity": {
+					"Ref": "ClusterSize"
+				},
+				"LaunchConfigurationName": {
+					"Ref": "ServerLaunchConfig"
+				},
+				"MaxSize": "12",
+				"MinSize": "1",
+				"LoadBalancerNames": [{
+					"Ref": "ElasticLoadBalancerPublic"
+				}, {
+					"Ref": "ElasticLoadBalancerPrivate"
+				}],
+				"Tags": [{
+					"Key": "Name",
+					"PropagateAtLaunch": true,
+					"Value": {
+						"Ref": "AWS::StackName"
+					}
+				}]
+			}
+		},
+		"ServerLaunchConfig": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Properties": {
+				"ImageId": {
+					"Ref": "AmiId"
+				},
+				"InstanceType": {
+					"Ref": "InstanceType"
+				},
+				"KeyName": {
+					"Ref": "KeyPair"
+				},
+				"SecurityGroups": [{
+					"Ref": "InstanceSecurityGroup"
+				}],
+				"UserData": {
+					"Ref": "CloudConfig"
+				},
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/xvda",
+					"Ebs": {
+						"VolumeSize": "8"
+					}
+				}]
+			}
+		}
+	},
+	"Outputs": {
+		"URL": {
+			"Description": "DNS of the stack",
+			"Value": {
+				"Fn::GetAtt": ["ElasticLoadBalancerPublic", "DNSName"]
+			}
+		}
+	}
+}

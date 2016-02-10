@@ -1,0 +1,38 @@
+# Configure kocho
+
+certificate: <insert ssl certificate arn here>
+
+# Image
+# A resource identifier for the image to boot.
+# For AWS, use the ami ID from the correct availability zone here.
+# E.g. ami-5f2f5528 for CoreOS Stable 681.2.0 (HVM eu-west-1)
+#
+# image: ami-5f2f5528
+
+# Machine Type
+# A resource identifier for the type of machine to boot.
+# For AWS, use the instance type here, e.g. m3.large, t2.micro etc.
+#
+# machine-type: m3.large
+
+# For more options, see config.go
+
+
+## AWS
+# Default values for the AWS provider (could also be provided via --aws-* flags)
+aws-vpc: <vpc name>
+aws-vpc-cidr: <vpc cidr>
+aws-keypair: <keypair name>
+aws-subnet: <subnet name>
+aws-az: <az>
+
+
+## DNS
+# Configures how to build the dns records in cloudflare
+dns-zone: <your-cloudflare-zone>
+
+# dns-catchall: *.{{.Stack}}
+# dns-catchall-private: *.{{.Stack}}.private
+# dns-private: {{.Stack}}.private
+# dns-public: {{.Stack}}
+# dns-fleet: {{.Stack}}.fleet

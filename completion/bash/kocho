@@ -1,0 +1,178 @@
+#!bash
+
+_kocho() {
+  local commands=(
+    help
+    create
+    destroy
+    etcd-discovery
+    instances
+    kill-instance
+    status
+    list
+    wait-until
+    dns
+    help
+    version
+  )
+
+  COMPREPLY=()
+  local cur prev words cword
+  _get_comp_words_by_ref -n : cur prev words cword
+
+  local command='kocho'
+  local counter=1
+  while [ $counter -lt $cword ]; do
+    case "${words[$counter]}" in
+      -H)
+        (( counter++ ))
+        ;;
+      -*)
+        ;;
+      *)
+        command="${words[$counter]}"
+        cpos=$counter
+        (( cpos++ ))
+        break
+        ;;
+    esac
+    (( counter++ ))
+  done
+
+  local completions_func=_kocho_${command}
+  declare -F $completions_func >/dev/null && $completions_func
+
+  return 0
+}
+
+_kocho_help() {
+  case "$prev" in
+    create|destroy|instances|status|list|wait-until|dns|version|user)
+      return
+      ;;
+    *)
+      ;;
+  esac
+
+  case "$cur" in
+    -*)
+      ;;
+    *)
+      COMPREPLY=( $( compgen -W "${commands[*]}" -- "$cur" ) )
+      ;;
+  esac
+}
+
+_kocho_kocho() {
+  case "$prev" in
+    *)
+      ;;
+  esac
+
+  case "$cur" in
+    -*)
+      COMPREPLY=( $( compgen -W "--version --debug" -- "$cur" ) )
+      ;;
+    *)
+      COMPREPLY=( $( compgen -W "${commands[*]} help" -- "$cur" ) )
+      ;;
+  esac
+}
+
+_kocho_create() {
+  case "$prev" in
+    --certificate|--yochu|--no-block|--image|--tags|--cluster-size)
+      return
+      ;;
+    *)
+      ;;
+  esac
+
+  case "$cur" in
+    -*)
+      COMPREPLY=( $( compgen -W "--certificate --yochu --no-block --image --tags --cluster-size" -- "$cur" ) )
+      ;;
+    *)
+      ;;
+  esac
+}
+
+_kocho_destroy() {
+  case "$prev" in
+    --force|--no-block)
+      return
+      ;;
+    *)
+      ;;
+  esac
+
+  case "$cur" in
+    -*)
+      COMPREPLY=( $( compgen -W "--force --no-block" -- "$cur" ) )
+      ;;
+    *)
+      ;;
+  esac
+}
+
+_kocho_etcd-discovery() {
+  return 0
+}
+
+_kocho_instances() {
+  return 0
+}
+
+_kocho_kill-instance() {
+  return 0
+}
+
+_kocho_status() {
+  return 0
+}
+
+_kocho_list() {
+  return 0
+}
+
+_kocho_wait-until() {
+  return 0
+}
+
+_kocho_dns() {
+  case "$prev" in
+    --delete)
+      return
+      ;;
+    *)
+      ;;
+  esac
+
+  case "$cur" in
+    -*)
+      COMPREPLY=( $( compgen -W "--delete" -- "$cur" ) )
+      ;;
+    *)
+      ;;
+  esac
+}
+
+_kocho_version() {
+  case "$prev" in
+    -h)
+      return
+      ;;
+    *)
+      ;;
+  esac
+
+  case "$cur" in
+    -*)
+      COMPREPLY=( $( compgen -W "-h" -- "$cur" ) )
+      ;;
+    *)
+      ;;
+  esac
+}
+
+complete -F _kocho kocho
