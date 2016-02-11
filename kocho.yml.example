@@ -17,9 +17,19 @@ certificate: <insert ssl certificate arn here>
 
 # For more options, see config.go
 
+## Yochu
+# Yochu is a provisioner which installs the specified versions of docker/etcd/fleet onto your coreos cluster
+# on startup. See https://github.com/giantswarm/yochu
+#
+# yochu-version: <version>
+# yochu-docker-version: <docker version>
+# yochu-fleet-version: <fleet version>
+# yochu-etcd-version: <etcd version>
+
 
 ## AWS
 # Default values for the AWS provider (could also be provided via --aws-* flags)
+#
 aws-vpc: <vpc name>
 aws-vpc-cidr: <vpc cidr>
 aws-keypair: <keypair name>
