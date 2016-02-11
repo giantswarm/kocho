@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/spf13/pflag"
@@ -19,10 +20,14 @@ var (
 		Summary:     "Create a new swarm on AWS",
 		Run:         runCreate,
 	}
+
+	createShowCreateFlags bool
 )
 
 func init() {
 	registerCreateFlags(&cmdCreate.Flags)
+
+	cmdCreate.Flags.BoolVar(&createShowCreateFlags, "show-flags", false, "Prints the used parameters and quits.")
 }
 
 func registerCreateFlags(flagset *pflag.FlagSet) {
@@ -53,6 +58,15 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 
 func runCreate(args []string) (exit int) {
 	flags := viperConfig.newViperCreateFlags()
+
+	if createShowCreateFlags {
+		data, err := json.MarshalIndent(flags, "", "  ")
+		if err != nil {
+			exitError("Failed to json encode flags: %v", err)
+		}
+		fmt.Printf("%s\n", string(data))
+		return
+	}
 
 	if flags.FleetVersion == "" {
 		return exitError("couldn't create swarm: fleet version must be set using --fleet-version=<version>")
