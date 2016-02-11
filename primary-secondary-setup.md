@@ -8,7 +8,7 @@ Setting up a cluster like this allows for more nodes to be utilised overall with
 ## Set up
 
 First of all, I'll detail my set up, just to avoid any confusion:
-  - My config file looks like (I've had to remove particular details for security reasons)
+  - The config file I'm using looks as follows. I've had to censor some data for security reasons - any key with the value "--" needs to be set with a value from your set up.
     ```
     $ cat ./kocho.yml
     # Configure kocho
@@ -26,7 +26,7 @@ First of all, I'll detail my set up, just to avoid any confusion:
     # DNS
     dns-zone: --
     ```
-  - I have `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` set in my environment, against my IAM credentials.
+  - I have `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables set in my environment, from my IAM credentials.
   
 ## Setting up templates
 ```
@@ -38,19 +38,21 @@ This will copy the default templates out of the binary itself, into the director
 ```
 $ kocho create --type=primary batman
 ```
-If you look at your CloudFormation control panel, you should see the stack has been created, with the name `batman`.
+If you look at your AWS CloudFormation control panel, you should see the stack has been created, with the name `batman`.
 
 ## Inspecting the primary cluster
 
-I'm going to SSH into one of the EC2 instances that have been brought up by the auto scaling group:
+I'm going to SSH into one of the AWS EC2 instances that have been brought up by the auto scaling group:
 ```
 CoreOS stable (681.2.0)
 Update Strategy: No Reboots
+
 core@ip-172-31-18-18 ~ $ etcdctl cluster-health
 cluster is healthy
 member 2845210c76c93874 is healthy
 member 5e5ffea7c416c645 is healthy
 member f0e9d438535c2b86 is healthy
+
 core@ip-172-31-18-18 ~ $ fleetctl list-machines
 MACHINE		IP		METADATA
 00fa83e0...	172.31.19.121	role=primary,role-core=true
@@ -73,10 +75,13 @@ http://172.31.18.18:2379,http://172.31.26.67:2379,http://172.31.19.121:2379
 
 We can then use this information to create the secondary cluster:
 ```
-$ kocho create --type=secondary --etcd-discovery-url=https://discovery.etcd.io/d5a0e0819e201c8103d346df8b20ed55 --etcd-peers=http://172.31.18.18:2379,http://172.31.26.67:2379,http://172.31.19.121:2379 robin
+$ kocho create --type=secondary \
+--etcd-discovery-url=https://discovery.etcd.io/d5a0e0819e201c8103d346df8b20ed55 \
+--etcd-peers=http://172.31.18.18:2379,http://172.31.26.67:2379,http://172.31.19.121:2379 \
+robin
 ```
 
-Like before, inspecting CloudFormation and EC2 control panels show that the cluster has been set up correctly. There should now be 2 CloudFormation stacks, each with 3 EC2 instances.
+Like before, inspecting AWS CloudFormation and AWS EC2 control panels show that the cluster has been set up correctly. There should now be 2 AWS CloudFormation stacks, each with 3 AWS EC2 instances.
 
 ## Inspecting the secondary cluster
 
@@ -84,15 +89,18 @@ I'm going to SSH into one of the instances of the secondary cluster:
 ```
 CoreOS stable (681.2.0)
 Update Strategy: No Reboots
+
 core@ip-172-31-17-39 ~ $ etcdctl cluster-health
 cluster is healthy
 member 2845210c76c93874 is healthy
 member 5e5ffea7c416c645 is healthy
 member f0e9d438535c2b86 is healthy
+
 core@ip-172-31-17-39 ~ $ etcdctl member list
 2845210c76c93874: name=7b977366e39a48e6ab9edd132472bae0 peerURLs=http://172.31.26.67:2380 clientURLs=http://172.31.26.67:2379
 5e5ffea7c416c645: name=00fa83e0c7d44e99845ed53f11e56531 peerURLs=http://172.31.19.121:2380 clientURLs=http://172.31.19.121:2379
 f0e9d438535c2b86: name=56c031ea78ee4d0e852cd0ea0333d657 peerURLs=http://172.31.18.18:2380 clientURLs=http://172.31.18.18:2379
+
 core@ip-172-31-17-39 ~ $ fleetctl list-machines
 MACHINE		IP		METADATA
 00fa83e0...	172.31.19.121	role=primary,role-core=true
