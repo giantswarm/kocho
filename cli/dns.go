@@ -31,7 +31,7 @@ func runDns(args []string) (exit int) {
 	}
 	name := args[0]
 
-	err := dns.DeleteEntries(viperConfig.getDNSNamingPattern(), name)
+	err := dns.DeleteEntries(dnsService, viperConfig.getDNSNamingPattern(), name)
 	if err != nil {
 		return exitError("couldn't delete dns entries", err)
 	}
@@ -42,7 +42,7 @@ func runDns(args []string) (exit int) {
 			return exitError(fmt.Sprintf("couldn't find swarm: %s", name), err)
 		}
 
-		err = dns.CreateSwarmEntries(viperConfig.getDNSNamingPattern(), s)
+		err = dns.CreateSwarmEntries(dnsService, viperConfig.getDNSNamingPattern(), s)
 		if err != nil {
 			return exitError("couldn't update dns entries", err)
 		}
