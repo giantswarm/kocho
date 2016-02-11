@@ -75,6 +75,17 @@ func (viper *KochoConfiguration) newViperCreateFlags() swarmtypes.CreateFlags {
 	}
 }
 
+func (viper *KochoConfiguration) getDNSServiceName() string {
+	return viper.GetString("dns-service")
+}
+
+func (viper *KochoConfiguration) getCloudflareConfig() dns.CloudFlareConfig {
+	return dns.CloudFlareConfig{
+		Email: os.Getenv("CLOUDFLARE_EMAIL"),
+		Token: os.Getenv("CLOUDFLARE_TOKEN"),
+	}
+}
+
 func (viper *KochoConfiguration) getDNSNamingPattern() dns.NamingPattern {
 	return dns.NamingPattern{
 		Zone:            viper.GetString("dns-zone"),
@@ -84,4 +95,16 @@ func (viper *KochoConfiguration) getDNSNamingPattern() dns.NamingPattern {
 		Private:         viper.GetString("dns-private"),
 		Fleet:           viper.GetString("dns-fleet"),
 	}
+}
+
+func newDNSService(kocho *KochoConfiguration) dns.DNSService {
+	var dnsService dns.DNSService
+	switch kocho.getDNSServiceName() {
+	case "", "cloudflare":
+		config := kocho.getCloudflareConfig()
+		dnsService = dns.NewCloudFlareDNS(config)
+	default:
+		panic("Invalid dns-system: " + kocho.getDNSServiceName())
+	}
+	return dnsService
 }

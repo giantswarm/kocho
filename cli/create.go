@@ -102,7 +102,7 @@ func runCreate(args []string) (exit int) {
 			return exitError("couldn't find out if swarm was started correctly", err)
 		}
 
-		err = dns.CreateSwarmEntries(viperConfig.getDNSNamingPattern(), s)
+		err = dns.CreateSwarmEntries(dnsService, viperConfig.getDNSNamingPattern(), s)
 		if err != nil {
 			return exitError("couldn't create dns entries", err)
 		}

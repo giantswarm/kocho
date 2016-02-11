@@ -50,7 +50,7 @@ func runDestroy(args []string) (exit int) {
 		return exitError(fmt.Sprintf("couldn't delete swarm: %s", swarmName), err)
 	}
 
-	err = dns.DeleteEntries(viperConfig.getDNSNamingPattern(), swarmName)
+	err = dns.DeleteEntries(dnsService, viperConfig.getDNSNamingPattern(), swarmName)
 	if err != nil {
 		return exitError("couldn't delete dns entries", err)
 	}

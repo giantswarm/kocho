@@ -64,30 +64,26 @@ type Entries struct {
 
 // DNSService provides mangement of a swarm's DNS entries.
 type DNSService interface {
-	CreateSwarmEntries(s *swarm.Swarm, entries *Entries) error
-	DeleteEntries(name string, entries *Entries) error
-	Update(stackName, cname, dns string, entries *Entries) error
+	createSwarmEntries(s *swarm.Swarm, entries *Entries) error
+	deleteEntries(name string, entries *Entries) error
+	update(stackName, cname, dns string, entries *Entries) error
 }
 
-var (
-	DefaultDNSService DNSService = &CloudFlareDNS{}
-)
-
 // CreateSwarmEntries creates DNS entries, given a NamingPattern and Swarm.
-func CreateSwarmEntries(pattern NamingPattern, s *swarm.Swarm) error {
-	return DefaultDNSService.CreateSwarmEntries(s, pattern.GetEntries(s.Name))
+func CreateSwarmEntries(service DNSService, pattern NamingPattern, s *swarm.Swarm) error {
+	return service.createSwarmEntries(s, pattern.GetEntries(s.Name))
 }
 
 // DeleteEntries deletes DNS entries, given a NamingPattern and stack name.
-func DeleteEntries(pattern NamingPattern, stackName string) error {
-	return DefaultDNSService.DeleteEntries(stackName, pattern.GetEntries(stackName))
+func DeleteEntries(service DNSService, pattern NamingPattern, stackName string) error {
+	return service.deleteEntries(stackName, pattern.GetEntries(stackName))
 }
 
 // Update ensures that necessary DNS records that might have changed are updated.
 //
 // NOTE: This currently only checks the fleet entry.
 // Returns false if no update was necessary.
-func Update(pattern NamingPattern, s *swarm.Swarm, instances []swarmtypes.Instance) (bool, error) {
+func Update(service DNSService, pattern NamingPattern, s *swarm.Swarm, instances []swarmtypes.Instance) (bool, error) {
 	dnsEntries := pattern.GetEntries(s.Name)
 	dnsChanged := false
 
@@ -96,7 +92,7 @@ func Update(pattern NamingPattern, s *swarm.Swarm, instances []swarmtypes.Instan
 			continue
 		}
 
-		if err := DefaultDNSService.Update(s.Name, dnsEntries.Fleet, inst.PublicDNSName, dnsEntries); err != nil {
+		if err := service.update(s.Name, dnsEntries.Fleet, inst.PublicDNSName, dnsEntries); err != nil {
 			return true, err
 		}
 		dnsChanged = true

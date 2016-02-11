@@ -73,7 +73,7 @@ func runKillInstance(args []string) (exit int) {
 		return exitError(errgo.WithCausef(err, nil, "failed to kill instance: %s", instanceID))
 	}
 
-	if changed, err := dns.Update(viperConfig.getDNSNamingPattern(), s, runningInstances); err != nil {
+	if changed, err := dns.Update(dnsService, viperConfig.getDNSNamingPattern(), s, runningInstances); err != nil {
 		return exitError(errgo.WithCausef(err, nil, "failed to update dns records"))
 	} else if !changed {
 		return exitError(errgo.Newf("DNS not changed. Couldn't find valid publid DNS name"))

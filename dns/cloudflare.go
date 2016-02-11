@@ -2,7 +2,6 @@ package dns
 
 import (
 	"fmt"
-	"os"
 	"sync"
 
 	"github.com/giantswarm/kocho/swarm"
@@ -12,14 +11,32 @@ import (
 	"golang.org/x/net/context"
 )
 
+// CloudFlareConfig provides the static configuration for a CloudFlareDNS service.
+type CloudFlareConfig struct {
+	Email, Token string
+}
+
+// NewCloudFlareDNS creates a new CloudFlareDNS object based on the given config.
+// If the config is invalid, a panic will be raised.
+func NewCloudFlareDNS(config CloudFlareConfig) *CloudFlareDNS {
+	if config.Email == "" || config.Token == "" {
+		panic("Cloudflare DNS requires email and token")
+	}
+	return &CloudFlareDNS{
+		CloudFlareConfig: config,
+	}
+}
+
 // CloudFlareDNS represents a client to the CloudFlare API.
 type CloudFlareDNS struct {
+	CloudFlareConfig
+
 	mutex   sync.Mutex
 	_client *cloudflare.Client
 }
 
-// CreateSwarmEntries creates DNS entries, given a Swarm and Entries to create.
-func (cli *CloudFlareDNS) CreateSwarmEntries(s *swarm.Swarm, e *Entries) error {
+// createSwarmEntries creates DNS entries, given a Swarm and Entries to create.
+func (cli *CloudFlareDNS) createSwarmEntries(s *swarm.Swarm, e *Entries) error {
 	ctx := context.TODO()
 
 	zone, err := cli.findZone(ctx, e.Zone)
@@ -64,8 +81,8 @@ func (cli *CloudFlareDNS) CreateSwarmEntries(s *swarm.Swarm, e *Entries) error {
 	return nil
 }
 
-// DeleteEntries deletes DNS entries, given a stack name, and list of Entries to delete.
-func (cli *CloudFlareDNS) DeleteEntries(name string, e *Entries) error {
+// deleteEntries deletes DNS entries, given a stack name, and list of Entries to delete.
+func (cli *CloudFlareDNS) deleteEntries(name string, e *Entries) error {
 	ctx := context.TODO()
 
 	client := cli.client()
@@ -96,8 +113,8 @@ func (cli *CloudFlareDNS) DeleteEntries(name string, e *Entries) error {
 	return nil
 }
 
-// Update updates DNS records, given a swarm name, CNAME, dns content, and Entries.
-func (cli *CloudFlareDNS) Update(swarmName, cname, dns string, e *Entries) error {
+// update updates DNS records, given a swarm name, CNAME, dns content, and Entries.
+func (cli *CloudFlareDNS) update(swarmName, cname, dns string, e *Entries) error {
 	ctx := context.TODO()
 	client := cli.client()
 
@@ -125,14 +142,10 @@ func (api *CloudFlareDNS) client() *cloudflare.Client {
 	}
 
 	options := cloudflare.Options{
-		Email: os.Getenv("CLOUDFLARE_EMAIL"),
-		Key:   os.Getenv("CLOUDFLARE_TOKEN"),
-	}
-	if options.Email == "" || options.Key == "" {
-		panic("environment variables CLOUDFLARE_EMAIL or CLOUDFLARE_TOKEN missing")
+		Email: api.Email,
+		Key:   api.Token,
 	}
 	api._client = cloudflare.New(&options)
-
 	return api._client
 }
 
