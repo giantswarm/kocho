@@ -11,10 +11,13 @@ import (
 	"golang.org/x/net/context"
 )
 
+// CloudFlareConfig provides the static configuration for a CloudFlareDNS service.
 type CloudFlareConfig struct {
 	Email, Token string
 }
 
+// NewCloudFlareDNS creates a new CloudFlareDNS object based on the given config.
+// If the config is invalid, a panic will be raised.
 func NewCloudFlareDNS(config CloudFlareConfig) *CloudFlareDNS {
 	if config.Email == "" || config.Token == "" {
 		panic("Cloudflare DNS requires email and token missing")
