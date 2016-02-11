@@ -1,0 +1,12 @@
+kocho
+!completion/kocho
+.gobuild
+templates_bindata.go
+templates/
+.godoc
+bin-dist/
+
+kocho.toml
+kocho.json
+kocho.yml
+kocho.yaml
