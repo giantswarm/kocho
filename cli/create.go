@@ -41,7 +41,6 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
 	flagset.String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
 	flagset.String("docker-version", "1.6.2", "version to use when provisioning docker binaries")
-	flagset.String("template-dir", "templates", "directory to use for reading templates")
 
 	awsEuWest1CoreOS := "ami-5f2f5528" // CoreOS Stable 681.2.0 (HVM eu-west-1)
 	flagset.String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
