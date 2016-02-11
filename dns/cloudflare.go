@@ -35,7 +35,7 @@ type CloudFlareDNS struct {
 	_client *cloudflare.Client
 }
 
-// CreateSwarmEntries creates DNS entries, given a Swarm and Entries to create.
+// createSwarmEntries creates DNS entries, given a Swarm and Entries to create.
 func (cli *CloudFlareDNS) createSwarmEntries(s *swarm.Swarm, e *Entries) error {
 	ctx := context.TODO()
 
@@ -81,7 +81,7 @@ func (cli *CloudFlareDNS) createSwarmEntries(s *swarm.Swarm, e *Entries) error {
 	return nil
 }
 
-// DeleteEntries deletes DNS entries, given a stack name, and list of Entries to delete.
+// deleteEntries deletes DNS entries, given a stack name, and list of Entries to delete.
 func (cli *CloudFlareDNS) deleteEntries(name string, e *Entries) error {
 	ctx := context.TODO()
 
@@ -113,7 +113,7 @@ func (cli *CloudFlareDNS) deleteEntries(name string, e *Entries) error {
 	return nil
 }
 
-// Update updates DNS records, given a swarm name, CNAME, dns content, and Entries.
+// update updates DNS records, given a swarm name, CNAME, dns content, and Entries.
 func (cli *CloudFlareDNS) update(swarmName, cname, dns string, e *Entries) error {
 	ctx := context.TODO()
 	client := cli.client()
