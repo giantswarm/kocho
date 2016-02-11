@@ -50,13 +50,15 @@ func (viper *KochoConfiguration) newViperCreateFlags() swarmtypes.CreateFlags {
 		TemplateDir: viper.GetString("template-dir"),
 
 		Tags:             viper.GetString("tags"),
-		YochuVersion:     viper.GetString("yochu"),
-		FleetVersion:     viper.GetString("fleet-version"),
 		EtcdPeers:        viper.GetString("etcd-peers"),
-		EtcdVersion:      viper.GetString("etcd-version"),
 		EtcdDiscoveryURL: viper.GetString("etcd-discovery-url"),
-		DockerVersion:    viper.GetString("docker-version"),
 		ClusterSize:      viper.GetInt("cluster-size"),
+
+		// Yochu Flags
+		YochuVersion:  viper.GetString("yochu"),
+		FleetVersion:  viper.GetString("yochu-fleet-version"),
+		EtcdVersion:   viper.GetString("yochu-etcd-version"),
+		DockerVersion: viper.GetString("yochu-docker-version"),
 
 		// Provider interpreted
 		ImageURI:       viper.GetString("image"),

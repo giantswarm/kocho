@@ -33,19 +33,21 @@ func init() {
 func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("type", "standalone", "type of the stack - there are primary, secondary and standalone stacks that form a cluster")
 	flagset.String("tags", "", "tags that should be added to fleetd of the swarm (eg --tags=cluster=core,disk=ssd)")
-	flagset.String("yochu", "", "version of Yochu to provision cluster nodes")
 	flagset.Int("cluster-size", 3, "number of nodes a cluster should have")
 	flagset.String("etcd-peers", "", "etcd peers a secondary swarm is connecting to")
 	flagset.String("etcd-discovery-url", "", "etcd discovery url for a secondary swarm is connecting to")
-	flagset.String("fleet-version", "v0.11.3-gs-2", "version to use when provisioning fleetd/fleetctl binaries")
-	flagset.String("etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
 	flagset.String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
-	flagset.String("docker-version", "1.6.2", "version to use when provisioning docker binaries")
 
 	awsEuWest1CoreOS := "ami-5f2f5528" // CoreOS Stable 681.2.0 (HVM eu-west-1)
 	flagset.String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
 	flagset.String("certificate", "", "certificate ARN to use to create aws cluster")
 	flagset.String("machine-type", "m3.large", "machine type to use, e.g. m3.large for AWS")
+
+	// Yochu
+	flagset.String("yochu", "", "version of Yochu to provision cluster nodes")
+	flagset.String("yochu-docker-version", "1.6.2", "version to use when provisioning docker binaries")
+	flagset.String("yochu-fleet-version", "v0.11.3-gs-2", "version to use when provisioning fleetd/fleetctl binaries")
+	flagset.String("yochu-etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
 
 	// AWS Provider specific
 	flagset.String("aws-keypair", "", "Keypair to use for AWS machines")
