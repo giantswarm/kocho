@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/juju/errgo"
 	homedir "github.com/mitchellh/go-homedir"
 	"github.com/nlopes/slack"
 )
@@ -41,6 +43,11 @@ func WriteConfig(config SlackConfiguration) error {
 	if err != nil {
 		return err
 	}
+
+	configFolder := filepath.Dir(expanded)
+	if err := os.MkdirAll(configFolder, 0777); err != nil {
+		return err
+	}
 	configFile, err := os.Create(expanded)
 	if err != nil {
 		return err
@@ -61,8 +68,7 @@ func SendMessage(version, build string) error {
 		return err
 	}
 	if _, err := os.Stat(expanded); os.IsNotExist(err) {
-		fmt.Println("couldn't find Slack configuration file, carrying on")
-		return err
+		return errgo.Mask(ErrNotConfigured, errgo.Any)
 	}
 
 	slackConfiguration := SlackConfiguration{
@@ -72,14 +78,12 @@ func SendMessage(version, build string) error {
 
 	configFile, err := os.Open(expanded)
 	if err != nil {
-		fmt.Println("couldn't open Slack configuration file:", err)
-		return err
+		return errgo.WithCausef(err, ErrInvalidConfiguration, "couldn't open Slack configuration file")
 	}
 	defer configFile.Close()
 
 	if err := json.NewDecoder(configFile).Decode(&slackConfiguration); err != nil {
-		fmt.Println("couldn't decode Slack configuration:", err)
-		return err
+		return errgo.WithCausef(err, ErrInvalidConfiguration, "couldn't decode Slack configuration")
 	}
 
 	client := slack.New(slackConfiguration.Token)
@@ -108,7 +112,6 @@ func SendMessage(version, build string) error {
 	params.IconEmoji = slackConfiguration.EmojiIcon
 
 	if _, _, err := client.PostMessage(slackConfiguration.NotificationChannel, "", params); err != nil {
-		fmt.Println("error occurred when sending Slack notification:", err)
 		return err
 	}
 

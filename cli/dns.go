@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/kocho/dns"
-	"github.com/giantswarm/kocho/notification"
 	"github.com/giantswarm/kocho/swarm"
 )
 
@@ -47,7 +46,7 @@ func runDns(args []string) (exit int) {
 			return exitError("couldn't update dns entries", err)
 		}
 	}
-	notification.SendMessage(projectVersion, projectBuild)
+	fireNotification()
 
 	return 0
 }

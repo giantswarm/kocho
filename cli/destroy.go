@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/giantswarm/kocho/dns"
-	"github.com/giantswarm/kocho/notification"
 	"github.com/giantswarm/kocho/provider"
 	"github.com/giantswarm/kocho/swarm"
 )
@@ -63,7 +62,7 @@ func runDestroy(args []string) (exit int) {
 	} else {
 		fmt.Printf("triggered swarm %s deletion\n", swarmName)
 	}
-	notification.SendMessage(projectVersion, projectBuild)
+	fireNotification()
 
 	return 0
 }
