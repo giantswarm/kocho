@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/kocho/dns"
-	"github.com/giantswarm/kocho/notification"
 	"github.com/giantswarm/kocho/ssh"
 	"github.com/giantswarm/kocho/swarm"
 	"github.com/giantswarm/kocho/swarm/types"
@@ -79,7 +78,7 @@ func runKillInstance(args []string) (exit int) {
 		return exitError(errgo.Newf("DNS not changed. Couldn't find valid publid DNS name"))
 	}
 
-	notification.SendMessage(projectVersion, projectBuild)
+	fireNotification()
 
 	return 0
 }

@@ -13,3 +13,5 @@ based on your personal needs.
     "username": "username"
 }
 ```
+
+You can obtain a slack token using the Slack webinterface. You need to create a Bot integration.

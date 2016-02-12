@@ -61,11 +61,29 @@ func runSlack(args []string) (exit int) {
 		}
 	case "test":
 		if err := notification.SendMessage(projectVersion, projectBuild); err != nil {
-			return exitError("failed to send test message")
+			if notification.IsNotConfigured(err) {
+				exitError("Notifications not configured. Use 'kocho slack init'")
+			} else if notification.IsInvalidConfiguration(err) {
+				exitError("Invalid configuration file:", err)
+			} else {
+				exitError("Failed to send message:", err)
+			}
+		} else {
+			fmt.Println("test message sent successfully.")
 		}
-
-		fmt.Println("test message sent successfully")
 	}
 
 	return 0
+}
+
+func fireNotification() {
+	if err := notification.SendMessage(projectVersion, projectBuild); err != nil {
+		if notification.IsNotConfigured(err) {
+			exitError("Notifications not configured. Use 'kocho slack init'")
+		} else if notification.IsInvalidConfiguration(err) {
+			exitError("Invalid configuration file: %v", err)
+		} else {
+			exitError("failed to send message: %v", err)
+		}
+	}
 }
