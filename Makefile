@@ -63,7 +63,9 @@ $(BIN): $(SOURCE) VERSION templates_bindata.go
 	    -e GOARCH=$(GOARCH) \
 	    -w /usr/code \
 	    golang:1.4.2-cross \
-	    go build -a -ldflags "-X main.projectVersion $(VERSION) -X main.projectBuild $(COMMIT)" -o $(BIN)
+	    	go build -a -ldflags \
+			"-X github.com/giantswarm/kocho/cli.projectVersion $(VERSION) -X github.com/giantswarm/kocho/cli.projectBuild $(COMMIT)" \
+			-o $(BIN)
 
 templates_bindata.go: $(TEMPLATES)
 	.gobuild/bin/go-bindata -pkg main -o templates_bindata.go default-templates/
