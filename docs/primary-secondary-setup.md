@@ -3,12 +3,13 @@
 `kocho` comes with out-of-the-box support for setting up a primary-secondary cluster, with `etcd` and `fleet`.
 
 This configuration sets up a primary `etcd` cluster, and a secondary cluster that sets `etcd` to proxy from the primary cluster.
-Setting up a cluster like this allows for more nodes to be utilised overall without overloading `etcd`.
+Setting up a cluster like this allows for more nodes to be utilised overall, without overloading `etcd`.
+See https://coreos.com/etcd/docs/latest/proxy.html for more information.
 
 ## Set up
 
-First of all, I'll detail my set up, just to avoid any confusion:
-  - The config file I'm using looks as follows. I've had to censor some data for security reasons - any key with the value "--" needs to be set with a value from your set up.
+First of all, we'll detail the set up, just to avoid any confusion:
+  - The config file we're using looks as follows. Some data has had to be censored for security reasons - any key with the value "--" needs to be set with a value from your set up.
     ```
     $ cat ./kocho.yml
     # Configure kocho
@@ -26,7 +27,7 @@ First of all, I'll detail my set up, just to avoid any confusion:
     # DNS
     dns-zone: --
     ```
-  - I have `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables set in my environment, from my IAM credentials.
+  - We have `AWS_ACCESS_KEY` and `AWS_SECRET_KEY` environment variables set in the environment, from IAM credentials.
   
 ## Setting up templates
 ```
@@ -42,7 +43,7 @@ If you look at your AWS CloudFormation control panel, you should see the stack h
 
 ## Inspecting the primary cluster
 
-I'm going to SSH into one of the AWS EC2 instances that have been brought up by the auto scaling group:
+If we SSH into one of the AWS EC2 instances that have been brought up by the auto scaling group:
 ```
 CoreOS stable (681.2.0)
 Update Strategy: No Reboots
@@ -85,7 +86,7 @@ Like before, inspecting AWS CloudFormation and AWS EC2 control panels show that 
 
 ## Inspecting the secondary cluster
 
-I'm going to SSH into one of the instances of the secondary cluster:
+If we SSH into one of the instances of the secondary cluster:
 ```
 CoreOS stable (681.2.0)
 Update Strategy: No Reboots
@@ -128,7 +129,6 @@ batman       primary     11 Feb 16 16:40 UTC
 If you've been following along, the following will remove both clusters completely:
 ```
 $ kocho destroy batman && kocho destroy robin
-
 ```
 
 Thanks! <3
