@@ -49,9 +49,9 @@ func runTemplateInit(args []string) (exit int) {
 
 	// Write out each template file
 	for _, template := range templates {
-		fileData, err := ioutil.ReadFile(path.Join(templatesDir, template))
+		fileData, err := Asset(path.Join(templatesDir, template))
 		if err != nil {
-			return exitError(fmt.Sprintf("couldn't read template: %s", template), err)
+			return exitError(fmt.Sprintf("couldn't access template asset: %s", template), err)
 		}
 
 		absPath, err := filepath.Abs(path.Join(flagTemplateDir, template))
