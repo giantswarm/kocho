@@ -20,7 +20,7 @@ all: get-deps $(BIN)
 ci: clean all run-tests
 
 clean:
-	rm -rf $(BUILD_PATH) $(BIN)
+	rm -rf $(BUILD_PATH) $(BIN) cli/templates_bindata.go
 
 install: $(BIN)
 	cp kocho /usr/local/bin/
@@ -53,7 +53,7 @@ deps:
 	# Fetch public dependencies via `go get`
 	GOPATH=$(GOPATH) go get -d -v github.com/giantswarm/$(PROJECT)
 
-$(BIN): $(SOURCE) VERSION templates_bindata.go
+$(BIN): $(SOURCE) VERSION cli/templates_bindata.go
 	echo Building for $(GOOS)/$(GOARCH)
 	docker run \
 	    --rm \
@@ -67,8 +67,8 @@ $(BIN): $(SOURCE) VERSION templates_bindata.go
 			"-X github.com/giantswarm/kocho/cli.projectVersion $(VERSION) -X github.com/giantswarm/kocho/cli.projectBuild $(COMMIT)" \
 			-o $(BIN)
 
-templates_bindata.go: $(TEMPLATES)
-	.gobuild/bin/go-bindata -pkg main -o templates_bindata.go default-templates/
+cli/templates_bindata.go: $(TEMPLATES)
+	.gobuild/bin/go-bindata -pkg cli -o cli/templates_bindata.go default-templates/
 
 run-tests:
 	GOPATH=$(GOPATH) go test ./... -cover
