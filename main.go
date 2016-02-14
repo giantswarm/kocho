@@ -1,9 +1,15 @@
 package main
 
 import (
-	cliPkg "github.com/giantswarm/kocho/cli"
+	"fmt"
+	"os"
+
+	"github.com/giantswarm/kocho/cli"
 )
 
 func main() {
-	cliPkg.NewKochoCmd()
+	if err := cli.RootCmd.Execute(); err != nil {
+		fmt.Println(err)
+		os.Exit(-1)
+	}
 }

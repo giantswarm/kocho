@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/kocho/notification"
 )
 
@@ -19,14 +21,33 @@ const (
 )
 
 var (
-	cmdSlack = &Command{
-		Name:        "slack",
-		Description: "Set up and test Slack notifications",
-		Summary:     "Set up Slack configuration and test that notifications are working",
-		Usage:       "init|test",
-		Run:         runSlack,
+	slackCmd = &cobra.Command{
+		Use:   "slack",
+		Short: "Manage Slack notifications",
+		Long:  "Manage set up and testing of Slack notifications",
+	}
+
+	slackInitCmd = &cobra.Command{
+		Use:   "init",
+		Short: "Initialise Slack notifications configuration",
+		Long:  "Interactively set up the configuration file for Slack notifications",
+		Run:   runSlackInit,
+	}
+
+	slackTestCmd = &cobra.Command{
+		Use:   "test",
+		Short: "Test Slack notifications",
+		Long:  "Test Slack notifications by firing a notification",
+		Run:   runSlackTest,
 	}
 )
+
+func init() {
+	RootCmd.AddCommand(slackCmd)
+
+	slackCmd.AddCommand(slackInitCmd)
+	slackCmd.AddCommand(slackTestCmd)
+}
 
 func readFromStdin(label string) string {
 	fmt.Printf("%s: ", label)
@@ -37,53 +58,63 @@ func readFromStdin(label string) string {
 	return string(line)
 }
 
-func runSlack(args []string) (exit int) {
-	if len(args) != 1 {
-		return exitError("usage: kocho slack init|test")
+func runSlackInit(cmd *cobra.Command, args []string) {
+	if len(args) != 0 {
+		cmd.Usage()
+		return
 	}
 
-	switch args[0] {
-	case "init":
-		slackConfiguration := notification.SlackConfiguration{}
+	slackConfiguration := notification.SlackConfiguration{}
 
-		slackConfiguration.Token = readFromStdin(LabelToken)
-		slackConfiguration.Username = readFromStdin(LabelUsername)
-		slackConfiguration.NotificationUsername = readFromStdin(LabelNotificationUsername)
-		slackConfiguration.EmojiIcon = readFromStdin(LabelEmoji)
-		slackConfiguration.NotificationChannel = readFromStdin(LabelNotificationChannel)
+	slackConfiguration.Token = readFromStdin(LabelToken)
+	slackConfiguration.Username = readFromStdin(LabelUsername)
+	slackConfiguration.NotificationUsername = readFromStdin(LabelNotificationUsername)
+	slackConfiguration.EmojiIcon = readFromStdin(LabelEmoji)
+	slackConfiguration.NotificationChannel = readFromStdin(LabelNotificationChannel)
 
-		if !strings.HasPrefix(slackConfiguration.NotificationChannel, "#") {
-			slackConfiguration.NotificationChannel = "#" + slackConfiguration.NotificationChannel
-		}
+	if !strings.HasPrefix(slackConfiguration.NotificationChannel, "#") {
+		slackConfiguration.NotificationChannel = "#" + slackConfiguration.NotificationChannel
+	}
 
-		if err := notification.WriteConfig(slackConfiguration); err != nil {
-			return exitError("failed to write configuration: ", err)
-		}
-	case "test":
-		if err := notification.SendMessage(projectVersion, projectBuild); err != nil {
-			if notification.IsNotConfigured(err) {
-				exitError("Notifications not configured. Use 'kocho slack init'")
-			} else if notification.IsInvalidConfiguration(err) {
-				exitError("Invalid configuration file:", err)
-			} else {
-				exitError("Failed to send message:", err)
-			}
+	if err := notification.WriteConfig(slackConfiguration); err != nil {
+		fmt.Printf("failed to write configuration: %s\n", err)
+		return
+	}
+}
+
+func runSlackTest(cmd *cobra.Command, args []string) {
+	if len(args) != 0 {
+		cmd.Usage()
+		return
+	}
+
+	if err := notification.SendMessage(projectVersion, projectBuild); err != nil {
+		if notification.IsNotConfigured(err) {
+			fmt.Println("Notifications not configured. Use 'kocho slack init'")
+			return
+		} else if notification.IsInvalidConfiguration(err) {
+			fmt.Printf("Invalid configuration file: %s\n", err)
+			return
 		} else {
-			fmt.Println("test message sent successfully.")
+			fmt.Printf("Failed to send message: %s\n", err)
+			return
 		}
+	} else {
+		fmt.Println("test message sent successfully.")
 	}
-
-	return 0
 }
 
 func fireNotification() {
 	if err := notification.SendMessage(projectVersion, projectBuild); err != nil {
 		if notification.IsNotConfigured(err) {
-			exitError("Notifications not configured. Use 'kocho slack init'")
+			fmt.Println("Notifications not configured. Use 'kocho slack init'")
+			return
 		} else if notification.IsInvalidConfiguration(err) {
-			exitError("Invalid configuration file: %v", err)
+			fmt.Printf("Invalid configuration file: %s\n", err)
+			return
 		} else {
-			exitError("failed to send message: %v", err)
+			fmt.Printf("failed to send message: %s\n", err)
+			return
 		}
 	}
 }

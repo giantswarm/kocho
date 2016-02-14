@@ -3,44 +3,52 @@ package cli
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/kocho/swarm"
 	"github.com/ryanuber/columnize"
 )
-
-var cmdInstances = &Command{
-	Name:        "instances",
-	Description: "List instances of a swarm",
-	Summary:     "List all the dns names of the instances of a swarm",
-	Run:         runInstances,
-}
 
 const (
 	instancesHeader = "Id | Image | Type | PublicDns | PrivateDns"
 	instancesScheme = "%s | %s | %s | %s | %s"
 )
 
-func runInstances(args []string) (exit int) {
-	if len(args) == 0 {
-		return exitError("no Swarm given. Usage: kocho instances <swarm>")
-	} else if len(args) > 1 {
-		return exitError("too many arguments. Usage: kocho instances <swarm>")
+var instancesCmd = &cobra.Command{
+	Use:   "instances [swarm_name]",
+	Short: "List instances of a swarm",
+	Long:  "List instances of a swarm, with type and dns values",
+	Run:   runInstances,
+}
+
+func init() {
+	RootCmd.AddCommand(instancesCmd)
+}
+
+func runInstances(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		cmd.Usage()
+		return
 	}
+
 	swarmName := args[0]
 
 	s, err := swarmService.Get(swarmName, swarm.AWS)
 	if err != nil {
-		return exitError(fmt.Sprintf("couldn't get instances of swarm: %s", swarmName), err)
+		fmt.Printf("couldn't get swarm: %s\n", err)
+		return
 	}
 
 	instances, err := s.GetInstances()
 	if err != nil {
-		return exitError(fmt.Sprintf("couldn't get instances of swarm: %s", swarmName), err)
+		fmt.Printf("couldn't get instances of swarm: %s\n", err)
+		return
 	}
 
 	lines := []string{instancesHeader}
 	for _, i := range instances {
 		lines = append(lines, fmt.Sprintf(instancesScheme, i.Id, i.Image, i.Type, i.PublicDNSName, i.PrivateDNSName))
 	}
+
 	fmt.Println(columnize.SimpleFormat(lines))
-	return 0
 }
