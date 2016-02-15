@@ -5,71 +5,81 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/kocho/dns"
 	"github.com/giantswarm/kocho/provider"
 	"github.com/giantswarm/kocho/swarm"
 )
 
 var (
-	cmdDestroy = &Command{
-		Name:        "destroy",
-		Description: "Destroy a swarm",
-		Summary:     "Destroy a swarm on AWS",
-		Run:         runDestroy,
+	destroyCmd = &cobra.Command{
+		Use:     "destroy [swarm_name]",
+		Aliases: []string{"rm"},
+		Short:   "Destroy a swarm",
+		Long:    "Obliterate a swarm from existence",
+		Run:     runDestroy,
 	}
 
 	forceDestroying = false
 )
 
 func init() {
-	cmdDestroy.Flags.BoolVar(&sharedFlags.NoBlock, "no-block", false, "do not wait until the swarm has been deleted before exiting")
-	cmdDestroy.Flags.BoolVar(&forceDestroying, "force", false, "do not confirm destroying")
+	destroyCmd.Flags().BoolVar(&sharedFlags.NoBlock, "no-block", false, "do not wait until the swarm has been deleted before exiting")
+	destroyCmd.Flags().BoolVar(&forceDestroying, "force", false, "do not confirm before destroying")
+
+	RootCmd.AddCommand(destroyCmd)
 }
 
-func runDestroy(args []string) (exit int) {
-	if len(args) == 0 {
-		return exitError("no Swarm given. Usage: kocho destroy <swarm>")
-	} else if len(args) > 1 {
-		return exitError("too many arguments. Usage: kocho destroy <swarm>")
+func runDestroy(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		cmd.Usage()
+		return
 	}
+
 	swarmName := args[0]
 
 	s, err := swarmService.Get(swarmName, swarm.AWS)
 	if err != nil {
-		return exitError(fmt.Sprintf("couldn't find swarm: %s", swarmName), err)
+		fmt.Printf("couldn't find swarm: %s\n", err)
+		return
 	}
 
 	if !forceDestroying {
 		if err := confirm(fmt.Sprintf("are you sure you want to destroy '%s'? Enter yes:", swarmName)); err != nil {
-			return exitError("failed to read from stdin", err)
+			fmt.Printf("failed to read from stdin: %s\n", err)
+			return
 		}
 	}
 
 	if err := s.Destroy(); err != nil {
-		return exitError(fmt.Sprintf("couldn't delete swarm: %s", swarmName), err)
+		fmt.Printf("couldn't delete swarm: %s\n", err)
+		return
 	}
 
 	err = dns.DeleteEntries(dnsService, viperConfig.getDNSNamingPattern(), swarmName)
 	if err != nil {
-		return exitError("couldn't delete dns entries", err)
+		fmt.Printf("couldn't delete DNS entries: %s\n", err)
+		return
 	}
 
 	if !sharedFlags.NoBlock {
 		err := s.WaitUntil(provider.StatusDeleted)
 		if err != nil {
-			return exitError("couldn't find out if swarm was deleted correctly", err)
+			fmt.Printf("couldn't find out if swarm was deleted correctly: %s\n", err)
+			return
 		}
 	} else {
 		fmt.Printf("triggered swarm %s deletion\n", swarmName)
 	}
-	fireNotification()
 
-	return 0
+	fireNotification()
 }
 
 func confirm(question string) error {
 	for {
 		fmt.Printf("%s ", question)
+
 		bio := bufio.NewReader(os.Stdin)
 		line, _, err := bio.ReadLine()
 		if err != nil {
@@ -79,6 +89,7 @@ func confirm(question string) error {
 		if string(line) == "yes" {
 			return nil
 		}
+
 		fmt.Println("please enter 'yes' to confirm")
 	}
 }

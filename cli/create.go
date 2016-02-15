@@ -4,111 +4,120 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/spf13/pflag"
+	"github.com/spf13/cobra"
 
 	"github.com/giantswarm/kocho/dns"
 	"github.com/giantswarm/kocho/provider"
 	"github.com/giantswarm/kocho/swarm"
 )
 
+const (
+	awsEuWest1CoreOS = "ami-5f2f5528" // CoreOS Stable 681.2.0 (HVM eu-west-1)
+)
+
 var (
-	cmdCreate = &Command{
-		Name:        "create",
-		Usage:       "<name>",
-		Description: "Create a swarm",
-		Summary:     "Create a new swarm on AWS",
-		Run:         runCreate,
+	createCmd = &cobra.Command{
+		Use:   "create [swarm_name]",
+		Short: "Create a swarm",
+		Long:  "Create a swarm on AWS, with given configuration",
+		Run:   runCreate,
 	}
 
 	createShowCreateFlags bool
 )
 
 func init() {
-	registerCreateFlags(&cmdCreate.Flags)
+	createCmd.Flags().String("type", "standalone", "type of the stack - there are primary, secondary and standalone stacks that form a cluster")
+	createCmd.Flags().String("tags", "", "tags that should be added to fleetd of the swarm (eg --tags=cluster=core,disk=ssd)")
+	createCmd.Flags().Int("cluster-size", 3, "number of nodes a cluster should have")
+	createCmd.Flags().String("etcd-peers", "", "etcd peers for a secondary swarm to connect to")
+	createCmd.Flags().String("etcd-discovery-url", "", "etcd discovery url for a secondary swarm to connect to")
+	createCmd.Flags().String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
 
-	cmdCreate.Flags.BoolVar(&createShowCreateFlags, "show-flags", false, "Prints the used parameters and quits.")
-}
-
-func registerCreateFlags(flagset *pflag.FlagSet) {
-	flagset.String("type", "standalone", "type of the stack - there are primary, secondary and standalone stacks that form a cluster")
-	flagset.String("tags", "", "tags that should be added to fleetd of the swarm (eg --tags=cluster=core,disk=ssd)")
-	flagset.Int("cluster-size", 3, "number of nodes a cluster should have")
-	flagset.String("etcd-peers", "", "etcd peers a secondary swarm is connecting to")
-	flagset.String("etcd-discovery-url", "", "etcd discovery url for a secondary swarm is connecting to")
-	flagset.String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
-
-	awsEuWest1CoreOS := "ami-5f2f5528" // CoreOS Stable 681.2.0 (HVM eu-west-1)
-	flagset.String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
-	flagset.String("certificate", "", "certificate ARN to use to create aws cluster")
-	flagset.String("machine-type", "m3.large", "machine type to use, e.g. m3.large for AWS")
+	createCmd.Flags().String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
+	createCmd.Flags().String("certificate", "", "certificate ARN to use to create aws cluster")
+	createCmd.Flags().String("machine-type", "m3.large", "machine type to use (e.g. m3.large for AWS)")
 
 	// Yochu
-	flagset.String("yochu", "", "version of Yochu to provision cluster nodes")
-	flagset.String("yochu-docker-version", "1.6.2", "version to use when provisioning docker binaries")
-	flagset.String("yochu-fleet-version", "v0.11.3-gs-2", "version to use when provisioning fleetd/fleetctl binaries")
-	flagset.String("yochu-etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
+	createCmd.Flags().String("yochu", "", "version of Yochu to use when provisioning cluster nodes")
+	createCmd.Flags().String("yochu-docker-version", "1.6.2", "version to use when provisioning docker binaries")
+	createCmd.Flags().String("yochu-fleet-version", "v0.11.3-gs-2", "version to use when provisioning fleetd/fleetctl binaries")
+	createCmd.Flags().String("yochu-etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
 
 	// AWS Provider specific
-	flagset.String("aws-keypair", "", "Keypair to use for AWS machines")
-	flagset.String("aws-vpc", "", "VPC to use for new AWS machines")
-	flagset.String("aws-vpc-cidr", "", "VPC CIDR to use for security configuration")
-	flagset.String("aws-subnet", "", "Subnet to use for new AWS machines")
-	flagset.String("aws-az", "", "AZ to use for new AWS machines")
+	createCmd.Flags().String("aws-keypair", "", "keypair to use for AWS machines")
+	createCmd.Flags().String("aws-vpc", "", "VPC to use for new AWS machines")
+	createCmd.Flags().String("aws-vpc-cidr", "", "VPC CIDR to use for security configuration")
+	createCmd.Flags().String("aws-subnet", "", "subnet to use for new AWS machines")
+	createCmd.Flags().String("aws-az", "", "AZ to use for new AWS machines")
+
+	createCmd.Flags().BoolVar(&createShowCreateFlags, "show-flags", false, "print the used parameters and quit")
+
+	RootCmd.AddCommand(createCmd)
 }
 
-func runCreate(args []string) (exit int) {
+func runCreate(cmd *cobra.Command, args []string) {
 	flags := viperConfig.newViperCreateFlags()
 
 	if createShowCreateFlags {
 		data, err := json.MarshalIndent(flags, "", "  ")
 		if err != nil {
-			exitError("Failed to json encode flags: %v", err)
+			fmt.Printf("Failed to json encode flags: %s\n", err)
+			return
 		}
+
 		fmt.Printf("%s\n", string(data))
 		return
 	}
 
+	if len(args) != 1 {
+		cmd.Usage()
+		return
+	}
+
 	if flags.FleetVersion == "" {
-		return exitError("couldn't create swarm: fleet version must be set using --fleet-version=<version>")
+		fmt.Println("couldn't create swarm: fleet version must be set using --fleet-version=<version>")
+		return
 	}
 
 	if flags.EtcdVersion == "" {
-		return exitError("couldn't create swarm: etcd version must be set using --etcd-version=<version>")
+		fmt.Println("couldn't create swarm: etcd version must be set using --etcd-version=<version>")
+		return
 	}
 
 	if flags.MachineType == "" {
-		return exitError("couldn't create swarm: --machine-type must be provided")
-	}
-	if flags.ImageURI == "" {
-		return exitError("couldn't create swarm: --image must be provided")
+		fmt.Println("couldn't create swarm: --machine-type must be provided")
+		return
 	}
 
-	if len(args) == 0 {
-		return exitError("no Swarm given. Usage: kocho create <swarm>")
-	} else if len(args) > 1 {
-		return exitError("too many arguments. Usage: kocho create <swarm>")
+	if flags.ImageURI == "" {
+		fmt.Println("couldn't create swarm: --image must be provided")
+		return
 	}
+
 	name := args[0]
 
 	s, err := swarmService.Create(name, swarm.AWS, flags)
 	if err != nil {
-		return exitError(fmt.Sprintf("couldn't create swarm: %s", name), err)
+		fmt.Printf("couldn't create swarm: %s\n", err)
+		return
 	}
 
 	if !sharedFlags.NoBlock {
 		err = s.WaitUntil(provider.StatusCreated)
 		if err != nil {
-			return exitError("couldn't find out if swarm was started correctly", err)
+			fmt.Printf("couldn't find out if swarm was started correctly: %s\n", err)
+			return
 		}
 
 		err = dns.CreateSwarmEntries(dnsService, viperConfig.getDNSNamingPattern(), s)
 		if err != nil {
-			return exitError("couldn't create dns entries", err)
+			fmt.Printf("couldn't create dns entries: %s\n", err)
+			return
 		}
 	} else {
 		fmt.Printf("triggered swarm %s start. No DNS will be configured\n", name)
 	}
-	fireNotification()
 
-	return 0
+	fireNotification()
 }

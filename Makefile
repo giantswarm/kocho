@@ -48,6 +48,7 @@ deps:
 	@GOPATH=$(GOPATH) builder go get github.com/ryanuber/columnize
 	@GOPATH=$(GOPATH) builder go get github.com/spf13/viper
 	@GOPATH=$(GOPATH) builder go get github.com/spf13/pflag
+	@GOPATH=$(GOPATH) builder go get github.com/spf13/cobra
 
 	#
 	# Fetch public dependencies via `go get`

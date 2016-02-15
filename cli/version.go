@@ -1,15 +1,22 @@
 package cli
 
-import "fmt"
+import (
+	"fmt"
 
-var cmdVersion = &Command{
-	Name:        "version",
-	Description: "Print the version and exit",
-	Summary:     "Print the version and exit",
-	Run:         runVersion,
+	"github.com/spf13/cobra"
+)
+
+var versionCmd = &cobra.Command{
+	Use:   "version",
+	Short: "Print out current version",
+	Long:  "Print out the current version of Kocho",
+	Run:   runVersion,
 }
 
-func runVersion(args []string) (exit int) {
-	fmt.Println("kocho version", projectVersion)
-	return
+func init() {
+	RootCmd.AddCommand(versionCmd)
+}
+
+func runVersion(cmd *cobra.Command, args []string) {
+	fmt.Println(projectVersion)
 }

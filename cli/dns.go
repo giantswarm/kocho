@@ -3,50 +3,56 @@ package cli
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/kocho/dns"
 	"github.com/giantswarm/kocho/swarm"
 )
 
 var (
-	flagDelete bool
-	cmdDns     = &Command{
-		Name:        "dns",
-		Summary:     "Update DNS of a swarm",
-		Usage:       "[--delete] <swarm>",
-		Description: "Updating public, private and fleet dns entries of a swarm. With the --delete flag you can also just delete the current DNS entries",
-		Run:         runDns,
+	dnsCmd = &cobra.Command{
+		Use:   "dns [swarm_name]",
+		Short: "Update DNS entries of a swarm",
+		Long:  "Update public, private and fleet DNS entries of a swarm",
+		Run:   runDns,
 	}
+
+	flagDelete bool
 )
 
 func init() {
-	cmdDns.Flags.BoolVar(&flagDelete, "delete", false, "delete DNS entries of a swarm")
+	dnsCmd.Flags().BoolVar(&flagDelete, "delete", false, "delete DNS entries of a swarm")
+
+	RootCmd.AddCommand(dnsCmd)
 }
 
-func runDns(args []string) (exit int) {
-	if len(args) == 0 {
-		return exitError("no Swarm given. Usage: kocho dns <swarm>")
-	} else if len(args) > 1 {
-		return exitError("too many arguments. Usage: kocho dns <swarm>")
+func runDns(cmd *cobra.Command, args []string) {
+	if len(args) != 1 {
+		cmd.Usage()
+		return
 	}
+
 	name := args[0]
 
 	err := dns.DeleteEntries(dnsService, viperConfig.getDNSNamingPattern(), name)
 	if err != nil {
-		return exitError("couldn't delete dns entries", err)
+		fmt.Printf("couldn't delete DNS entries: %s\n", err)
+		return
 	}
 
 	if !flagDelete {
 		s, err := swarmService.Get(name, swarm.AWS)
 		if err != nil {
-			return exitError(fmt.Sprintf("couldn't find swarm: %s", name), err)
+			fmt.Printf("couldn't find swarm: %s\n", err)
+			return
 		}
 
 		err = dns.CreateSwarmEntries(dnsService, viperConfig.getDNSNamingPattern(), s)
 		if err != nil {
-			return exitError("couldn't update dns entries", err)
+			fmt.Printf("couldn't update DNS entries: %s\n", err)
+			return
 		}
 	}
-	fireNotification()
 
-	return 0
+	fireNotification()
 }

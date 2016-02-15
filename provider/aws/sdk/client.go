@@ -47,11 +47,11 @@ type ConfigurableSessionProvider struct {
 
 // RegisterFlagSet registers command line flags with the SessionProvider.
 func (dsp *ConfigurableSessionProvider) RegisterFlagSet(flagSet *pflag.FlagSet) {
-	flagSet.StringVar(&dsp.ConfigRegion, "aws-region", dsp.ConfigRegion, "Configures the AWS to be used")
+	flagSet.StringVar(&dsp.ConfigRegion, "aws-region", dsp.ConfigRegion, "AWS region")
 
-	flagSet.StringVar(&dsp.ConfigAccessKey, "aws-access-key", dsp.ConfigAccessKey, "AWS Access Key")
-	flagSet.StringVar(&dsp.ConfigSecretKey, "aws-secret-key", dsp.ConfigSecretKey, "AWS Secret Key")
-	flagSet.StringVar(&dsp.ConfigSessionToken, "aws-session-token", dsp.ConfigSessionToken, "AWS Session Token - empty most of the time")
+	flagSet.StringVar(&dsp.ConfigAccessKey, "aws-access-key", dsp.ConfigAccessKey, "AWS access key")
+	flagSet.StringVar(&dsp.ConfigSecretKey, "aws-secret-key", dsp.ConfigSecretKey, "AWS secret key")
+	flagSet.StringVar(&dsp.ConfigSessionToken, "aws-session-token", dsp.ConfigSessionToken, "AWS session token - empty most of the time")
 
 	flagSet.BoolVar(&dsp.ConfigDisableENVCredentials, "disable-aws-env-credentials", dsp.ConfigDisableENVCredentials, "do not read credentials from environment variables")
 }

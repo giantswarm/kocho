@@ -3,82 +3,93 @@ package cli
 import (
 	"fmt"
 
+	"github.com/spf13/cobra"
+
 	"github.com/giantswarm/kocho/dns"
 	"github.com/giantswarm/kocho/ssh"
 	"github.com/giantswarm/kocho/swarm"
 	"github.com/giantswarm/kocho/swarm/types"
-
-	"github.com/juju/errgo"
 )
 
-var cmdKillInstance = &Command{
-	Name:        "kill-instance",
-	Description: "Kill one instance of a swarm",
-	Summary:     "Kill and remove a swarm's instance from the etcd cluster",
-	Run:         runKillInstance,
-}
-
 var (
+	killInstanceCmd = &cobra.Command{
+		Use:   "kill-instance [swarm_name] [instance_id]",
+		Short: "Kill an instance of a swarm",
+		Long:  "Kill and remove an instance from the etcd cluster",
+		Run:   runKillInstance,
+	}
+
 	disableEtcdCleanup bool
 )
 
 func init() {
-	cmdKillInstance.Flags.BoolVar(&disableEtcdCleanup, "disable-machine-cleanup", false, "do not connect to the machine and try to cleanly remove it from the etcd cluster first")
+	killInstanceCmd.Flags().BoolVar(&disableEtcdCleanup, "disable-machine-cleanup", false, "do not try to remove the machine from the etcd cluster before killing it")
+
+	RootCmd.AddCommand(killInstanceCmd)
 }
 
-func runKillInstance(args []string) (exit int) {
+func runKillInstance(cmd *cobra.Command, args []string) {
 	if len(args) != 2 {
-		return exitError("wrong number of arguments. Usage: kocho kill-instance <swarm> <instance>")
+		cmd.Usage()
+		return
 	}
+
 	swarmName := args[0]
 	instanceID := args[1]
 
 	s, err := swarmService.Get(swarmName, swarm.AWS)
 	if err != nil {
-		return exitError(fmt.Sprintf("couldn't get instances of swarm: %s", swarmName), err)
+		fmt.Printf("couldn't get swarm: %s\n", err)
+		return
 	}
 
 	instances, err := s.GetInstances()
 	if err != nil {
-		return exitError(err)
+		fmt.Printf("couldn't get instances of swarm: %s\n", err)
+		return
 	}
 
 	killableInstance, err := swarmtypes.FindInstanceById(instances, instanceID)
 	if err != nil {
-		return exitError(errgo.WithCausef(err, nil, "failed to find provided instance: %s", instanceID))
+		fmt.Printf("failed to find provided instance: %s\n", err)
+		return
 	}
 
 	runningInstances := swarmtypes.FilterInstanceById(instances, instanceID)
 	if len(runningInstances) == 0 {
-		return exitError(errgo.Newf("no more instances left in swarm %s. Cannot update Fleet DNS entry", swarmName))
+		fmt.Printf("no instances in swarm - cannot update fleet DNS entry\n")
+		return
 	}
 
 	if !disableEtcdCleanup {
-
 		if err = ssh.RemoveFromEtcd(killableInstance.PublicIPAddress); err != nil {
-			return exitError(errgo.WithCausef(err, nil, "failed to remove instance from etcd cluster: %s", instanceID))
+			fmt.Printf("failed to remove instance from etcd cluster: %s\n", err)
+			return
 		}
 
 		if err = ssh.StopEtcd(killableInstance.PublicIPAddress); err != nil {
-			return exitError(errgo.WithCausef(err, nil, "failed to stop etcd on instance: %s", instanceID))
+			fmt.Printf("failed to stop etcd on instance: %s\n", err)
+			return
 		}
 	}
 
 	if err = swarm.RemoveInstanceFromDiscovery(killableInstance); err != nil {
-		return exitError(errgo.WithCausef(err, nil, "failed to remove instance from etcd discovery: %s", instanceID))
+		fmt.Printf("failed to remove instance from etcd discovery: %s\n", err)
+		return
 	}
 
 	if err = s.KillInstance(killableInstance); err != nil {
-		return exitError(errgo.WithCausef(err, nil, "failed to kill instance: %s", instanceID))
+		fmt.Printf("failed to kill instance: %s\n", err)
+		return
 	}
 
 	if changed, err := dns.Update(dnsService, viperConfig.getDNSNamingPattern(), s, runningInstances); err != nil {
-		return exitError(errgo.WithCausef(err, nil, "failed to update dns records"))
+		fmt.Printf("failed to update dns records: %s\n", err)
+		return
 	} else if !changed {
-		return exitError(errgo.Newf("DNS not changed. Couldn't find valid publid DNS name"))
+		fmt.Printf("DNS not changed. Couldn't find valid publid DNS name: %s\n", err)
+		return
 	}
 
 	fireNotification()
-
-	return 0
 }
