@@ -100,7 +100,7 @@ func (viper *KochoConfiguration) getDNSNamingPattern() dns.NamingPattern {
 func newDNSService(kocho *KochoConfiguration) dns.DNSService {
 	var dnsService dns.DNSService
 	switch kocho.getDNSServiceName() {
-	case "":
+	case "", "noop":
 		dnsService = dns.NewNoopDNS()
 	case "cloudflare":
 		config := kocho.getCloudflareConfig()
