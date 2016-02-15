@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ec2StateTerminated = "terminated"
+	ec2StateRunning = "running"
 )
 
 // NewEC2 returns a new EC2.
@@ -59,7 +59,9 @@ func (e EC2) describeInstances(input *ec2.DescribeInstancesInput) ([]types.Insta
 	result := make([]types.Instance, 0)
 	for _, reservation := range resp.Reservations {
 		for _, i := range reservation.Instances {
-			if *(i.State.Name) == ec2StateTerminated {
+			// For now we filter everything that is now running, as certain
+			// consumers of this expect all returned instances to be good instances
+			if *(i.State.Name) != ec2StateRunning {
 				continue
 			}
 			inst := types.Instance{
