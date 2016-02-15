@@ -59,7 +59,7 @@ func init() {
 
 	// DNS Specific (used by create, kill-instance, dns subcmds)
 	// see config.go getDNSNamingPattern()
-	globalFlagset.String("dns-service", "cloudflare", "The DNS backend to use, defaults to cloudflare")
+	globalFlagset.String("dns-service", "", "The DNS backend to use, defaults to none - cloudflare is also available")
 	globalFlagset.String("dns-zone", dns.DefaultNamingPattern.Zone, "the zone to create the dns records in")
 	globalFlagset.String("dns-catchall", dns.DefaultNamingPattern.Catchall, "template for the catchall dns record")
 	globalFlagset.String("dns-catchall-private", dns.DefaultNamingPattern.CatchallPrivate, "template for the catchall-private dns record")
