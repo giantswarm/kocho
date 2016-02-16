@@ -13,25 +13,30 @@ func GetEtcdDiscoveryUrl(host string) (string, error) {
 	return uuid, errgo.Mask(err)
 }
 
+// GetEtcd2MemberName connects to the given host and returns the name of the given host in the etcd2 quorum.
+// This assumes the member has "name=<machine-id>" set.
+func GetEtcd2MemberName(host string) (string, error) {
+	cmd := "etcdctl member list | fgrep \"name=$(cat /etc/machine-id)\" | cut -d: -f1"
+	if name, err := RunRemoteCommand(host, cmd); err != nil {
+		return "", errgo.Mask(err)
+	} else {
+		return name, nil
+	}
+}
+
 // RemoveFromEtcd connects to the given host and removes it from the etcd discovery.
 //
 // Utilizes GetMachineID()
 func RemoveFromEtcd(host string) error {
-	machineId, err := GetMachineID(host)
-	if err != nil {
-		return errgo.Mask(err)
-	}
-
 	// Dirty: Remove the machine from the etcd cluster by running a HTTP DELETE
 	// request from the machine we want to kill
 	cmd := []string{
-		"curl",
-		"--silent",
-		"--location",
-		"--request DELETE",
-		"http://127.0.0.1:2380/v2/admin/machines/" + machineId,
+		"etcdctl",
+		"member",
+		"remove",
+		"$(etcdctl member list | fgrep \"name=$(cat /etc/machine-id)\" | cut -d: -f1)",
 	}
-	if _, err = RunRemoteCommand(host, strings.Join(cmd, " ")); err != nil {
+	if _, err := RunRemoteCommand(host, strings.Join(cmd, " ")); err != nil {
 		return errgo.Mask(err)
 	}
 	return nil
