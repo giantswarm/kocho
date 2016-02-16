@@ -13,7 +13,7 @@ Download the latest binary:
 
 Clone the git repository: `git@github.com:giantswarm/kocho.git`
 
-Download the latest docker image from here: `registry.giantswarm.io/giantswarm/kocho`
+Download the latest docker image from here: https://hub.docker.com/r/giantswarm/kocho/
 
 ## Running Kocho
 
