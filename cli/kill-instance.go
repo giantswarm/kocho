@@ -18,12 +18,22 @@ var cmdKillInstance = &Command{
 	Run:         runKillInstance,
 }
 
+const (
+	etcdDocsLink = "http://github.com/giantswarm/kocho/blob/master/docs/etcd-operations.md"
+
+	// Params: instanceId, etcdDocsLink
+	killInstanceSuccessMessage = "Success! Instance %s has been terminated.\n" +
+		"The Autoscaler will start a new instance in its place.\n" +
+		"If you want the new instance to be part of the etcd quorum, please add it, when it's up. \n" +
+		"Follow the guide at %s for help.\n"
+)
+
 var (
-	disableEtcdCleanup bool
+	ignoreQuorumCheck bool
 )
 
 func init() {
-	cmdKillInstance.Flags.BoolVar(&disableEtcdCleanup, "disable-machine-cleanup", false, "do not connect to the machine and try to cleanly remove it from the etcd cluster first")
+	cmdKillInstance.Flags.BoolVar(&ignoreQuorumCheck, "ignore-quorum-check", false, "do not connect to the machine and check if it is part of the etcd quorum")
 }
 
 func runKillInstance(args []string) (exit int) {
@@ -53,19 +63,15 @@ func runKillInstance(args []string) (exit int) {
 		return exitError(errgo.Newf("no more instances left in swarm %s. Cannot update Fleet DNS entry", swarmName))
 	}
 
-	if !disableEtcdCleanup {
-
-		if err = ssh.RemoveFromEtcd(killableInstance.PublicIPAddress); err != nil {
-			return exitError(errgo.WithCausef(err, nil, "failed to remove instance from etcd cluster: %s", instanceID))
+	if !ignoreQuorumCheck {
+		etcdQuorumID, err := ssh.GetEtcd2MemberName(killableInstance.PublicIPAddress)
+		if err != nil {
+			return exitError(errgo.WithCausef(err, nil, "ssh: failed to check quorum member list: %v", err))
 		}
 
-		if err = ssh.StopEtcd(killableInstance.PublicIPAddress); err != nil {
-			return exitError(errgo.WithCausef(err, nil, "failed to stop etcd on instance: %s", instanceID))
+		if etcdQuorumID != "" {
+			return exitError(errgo.Newf("Instance %s seems to be part of the etcd quorum. Please remove it beforehand. See %s", killableInstance.Id, etcdDocsLink))
 		}
-	}
-
-	if err = swarm.RemoveInstanceFromDiscovery(killableInstance); err != nil {
-		return exitError(errgo.WithCausef(err, nil, "failed to remove instance from etcd discovery: %s", instanceID))
 	}
 
 	if err = s.KillInstance(killableInstance); err != nil {
@@ -77,6 +83,8 @@ func runKillInstance(args []string) (exit int) {
 	} else if !changed {
 		return exitError(errgo.Newf("DNS not changed. Couldn't find valid publid DNS name"))
 	}
+
+	fmt.Printf(killInstanceSuccessMessage, killableInstance.Id, etcdDocsLink)
 
 	fireNotification()
 

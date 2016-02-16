@@ -12,16 +12,21 @@ import (
 
 // RemoveInstanceFromDiscovery removes an instance from etcd discovery.
 func RemoveInstanceFromDiscovery(i swarmtypes.Instance) error {
-	machineId, err := ssh.GetMachineID(i.PublicIPAddress)
+	etcdMemberName, err := ssh.GetEtcd2MemberName(i.PublicIPAddress)
 	if err != nil {
 		return errgo.Mask(err)
 	}
+	// Not a quorum member
+	if etcdMemberName == "" {
+		return nil
+	}
+
 	discoveryUrl, err := ssh.GetEtcdDiscoveryUrl(i.PublicIPAddress)
 	if err != nil {
 		return errgo.Mask(err)
 	}
 
-	machineUrl := discoveryUrl + "/" + machineId
+	machineUrl := discoveryUrl + "/" + etcdMemberName
 	req, err := http.NewRequest("DELETE", machineUrl, nil)
 	if err != nil {
 		return errgo.Mask(err)
