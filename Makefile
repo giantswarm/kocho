@@ -6,14 +6,21 @@ TEMPLATES=$(shell find default-templates -name '*.tmpl')
 
 BIN := $(PROJECT)
 
+SOURCE=$(shell find . -name '*.go')
+
 VERSION := $(shell cat VERSION)
 COMMIT := $(shell git rev-parse --short HEAD)
 
-.PHONY: clean run-test get-deps deps update-deps fmt run-tests
-
 GOPATH := $(BUILD_PATH)
+GOVERSION=1.5
+ifndef GOOS
+	GOOS := linux
+endif
+ifndef GOARCH
+	GOARCH := amd64
+endif
 
-SOURCE=$(shell find . -name '*.go')
+.PHONY: clean run-test get-deps deps update-deps fmt run-tests
 
 all: get-deps $(BIN)
 
@@ -54,20 +61,20 @@ deps:
 	GOPATH=$(GOPATH) go get -d -v github.com/giantswarm/$(PROJECT)
 
 $(BIN): $(SOURCE) VERSION cli/templates_bindata.go
-	echo Building for $(GOOS)/$(GOARCH)
+	@echo Building for $(GOOS)/$(GOARCH)
 	docker run \
-	    --rm \
-	    -v $(shell pwd):/usr/code \
-	    -e GOPATH=/usr/code/.gobuild \
-	    -e GOOS=$(GOOS) \
-	    -e GOARCH=$(GOARCH) \
-	    -w /usr/code \
-	    golang:1.4.2-cross \
-	    	go build -a -ldflags \
-			"-X github.com/giantswarm/kocho/cli.projectVersion $(VERSION) -X github.com/giantswarm/kocho/cli.projectBuild $(COMMIT)" \
-			-o $(BIN)
+		--rm \
+		-v $(shell pwd):/usr/code \
+		-e GOPATH=/usr/code/.gobuild \
+		-e GOOS=$(GOOS) \
+		-e GOARCH=$(GOARCH) \
+		-w /usr/code \
+		golang:$(GOVERSION) \
+		go build -a -ldflags \
+		"-X github.com/giantswarm/kocho/cli.projectVersion=$(VERSION) -X github.com/giantswarm/kocho/cli.projectBuild=$(COMMIT)" \
+		-o $(BIN)
 
-cli/templates_bindata.go: $(TEMPLATES)
+cli/templates_bindata.go: .gobuild/bin/go-bindata $(TEMPLATES)
 	.gobuild/bin/go-bindata -pkg cli -o cli/templates_bindata.go default-templates/
 
 run-tests:
