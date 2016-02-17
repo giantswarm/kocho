@@ -77,6 +77,8 @@ $ sudo systemctl restart etcd2
 
 ### List of IMPORTANT Checks prior to closing your terminal and go for a beer
 
-1. Check if the node has been added with `etcdctl member list`. Verify that all the data is correct. It can happen that for some reason some fields are not filled, if so ASK someone more experienced to help out.
-2. Verify if the cluster is healthy with `etcdctl cluster-health`. If not, you should again ASK to someone more experienced for help.
-3. Get the discovery information to figure out if your new member is included as an etcd node in the discovery information with `curl https://discovery.etcd.io/DISCOVERY_ID`. If not, you should again ASK to someone more experienced for help.
+1. Check if the node has been added with `etcdctl member list`. Verify that all the data is correct. It can happen that for some reason some fields are not filled.
+2. Verify if the cluster is healthy with `etcdctl cluster-health`.
+3. Get the discovery information to figure out if your new member is included as an etcd node in the discovery information with `curl https://discovery.etcd.io/DISCOVERY_ID`.
+
+If any of the above checks are not correct, you should check if you went through all the 5 steps described above, consult the [etcd documentation](https://coreos.com/etcd/docs/), or ask someone more experienced for help.
