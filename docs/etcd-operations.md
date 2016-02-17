@@ -29,17 +29,16 @@ $ curl -XDELETE https://discovery.etcd.io/544503849b0bbb16263321f824e6643f/abcde
 
 ## Promoting a machine to be part of the quorum
 
-TBD
-This operation is quite **IMPORTANT** and **CRITICAL**, so if you don't feel READY to do it, or your knowledge of etcd is not sufficient to face sudden errors. Please, ASK one of your colleagues, you can _BRING DOWN_ the whole cluster.
+In production environments this operation is quite **IMPORTANT** and **CRITICAL**, so if you don't feel READY to do it, or your knowledge of etcd is not sufficient to face sudden errors, please, ASK someone more experienced, as you can _BRING DOWN_ the whole cluster.
 
-1. You need to verify if the member(machine) you want to move out, it's an etcd leader or not. If this machine is an etcd leader, you should be CAREFUL and force a leader election prior to continue the member removal operation.
-2. Once your etcd node is not the leader one, you can remove as etcd member.
+1. You need to verify if the member (machine) you want to move out is an etcd leader or not. If this machine is an etcd leader, you should be CAREFUL and force a leader election prior to continue the member removal operation.
+2. Once your etcd node is not the leader, you can remove its etcd membership.
     * `etcdctl member remove ${ID_etcdctl_member_list}`
-3. Remove this node from the discovery
+3. Remove the node from the discovery
     * `cat etcd2.service.d/20-cloudinit.conf` to get the DISCOVERY_ID
     * curl https://discovery.etcd.io/DISCOVERY_ID/{ETCDCTL_MEMBER_ID} -XDELETE
 
-4. Add new member to the core members:
+4. Add new member to core members:
 
 ```
 export ETCD_DATA_DIR=/var/lib/etcd2
@@ -59,13 +58,13 @@ export ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380;
 details=$(etcdctl member add $ETCD_NAME http://$private_ipv4:2380); 
 eval export `echo "$details" | tail -n-3`;                          
 
+# stop etcd2
 
-$ sudo systemctl stop etcd2;                                               
-
-
-# stop etcd2 
+$ sudo systemctl stop etcd2;  
 $ sudo rm -rf /var/lib/etcd2/proxy
-#etcd2 has to be started once with the current `env`, wait for few seconds to verify the execution is correct and there isn't errors.
+
+# etcd2 has to be started once with the current `env`, wait for few seconds to verify the execution is correct and there are no errors.
+
 $ sudo -E -u etcd /home/core/bin/etcd2
 
 $ pkill etcd2
@@ -76,7 +75,10 @@ $ sudo systemctl restart etcd2
 5. Add your node to the discovery with the following command:
 `curl --data-urlencode "value=$MACHINE_ID=http://$MACHINE_IP:2380" -XPUT https://discovery.etcd.io/$CLUSTER_ID/$ID_ETCD_MEMBER_LIST`
 
-### List of IMPORTANT Checks prior to close your Terminal and go for a beer
-1. Check if the node has been added `etcdctl member list`. Verify that all the data is correct. It can happen that for some reason some fields are not fulfill, if so ASK to one of your colleagues.
-2. Verify if the cluster is healthy `etcdctl cluster-health`. It has to be, if not you should ASK to one of your colleagues for help.
-3. Get the discovery information to figure it out if your new member is included as an etcd node in the discovery information, `curl https://discovery.etcd.io/DISCOVERY_ID`. It has to be there, if not you should ASK to one of your colleagues for help.
+### List of IMPORTANT Checks prior to closing your terminal and go for a beer
+
+1. Check if the node has been added with `etcdctl member list`. Verify that all the data is correct. It can happen that for some reason some fields are not filled.
+2. Verify if the cluster is healthy with `etcdctl cluster-health`.
+3. Get the discovery information to figure out if your new member is included as an etcd node in the discovery information with `curl https://discovery.etcd.io/DISCOVERY_ID`.
+
+If any of the above checks are not correct, you should check if you went through all the 5 steps described above, consult the [etcd documentation](https://coreos.com/etcd/docs/), or ask someone more experienced for help.
