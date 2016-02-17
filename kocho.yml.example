@@ -38,7 +38,7 @@ aws-az: <az>
 
 
 ## DNS
-# Configures how to build the dns records in cloudflare
+# Configures how to build DNS records with CloudFlare
 # dns-service: cloudflare
 # dns-zone: <your-cloudflare-zone>
 #
