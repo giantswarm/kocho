@@ -50,6 +50,7 @@ aws-keypair: <keypair>
 aws-subnet: <subnet>
 aws-az: <availability zone>
 
+dns-sevice: cloudflare
 dns-zone: <cloudflare domain>
 ```
 
@@ -65,11 +66,11 @@ export AWS_SECRET_ACCESS_KEY=<aws secret access key>
 export AWS_ACCESS_KEY=<aws access key>
 ```
 
-You also need to put your cloudflare credentials into the environment.
+We have configured Kocho in the `kocho.yml` to use [CloudFlare](https://www.cloudflare.com) to create DNS records for you. You also need to put your cloudflare credentials into the environment.
 
 ```
 export CLOUDFLARE_EMAIL=<cloudflare email>
-export CLOUDFLARE_TOKEN=<cloudflare token>
+export CLOUDFLARE_TOKEN=<cloudflare api token>
 ```
 
 ## Using Kocho
