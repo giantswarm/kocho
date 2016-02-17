@@ -5,10 +5,10 @@ of CoreOS clusters with customized versions of Etcd, Fleet and Docker.
 
 ## Prerequisites
 
- * Please have your AWS Access Keys ready
- * Please have CloudFlare Token ready
- * Please have `builder` installed
- * When running kocho in a docker container, docker needs to be installed
+ * Have your AWS Access Keys ready
+ * When running Kocho in a Docker container, [Docker](https://docs.docker.com/engine/installation/) needs to be installed
+ * For building you need to have [`builder`](https://github.com/giantswarm/builder) installed
+ * If you want to use [CloudFlare](https://www.cloudflare.com), have your CloudFlare Token ready
 
 ## Building Kocho
 
@@ -20,17 +20,18 @@ $ cd kocho
 $ make
 ```
 
-The Makefile builds kocho by default for Linux. If you are running on Mac OSX,
+The Makefile builds kocho by default for Linux. If you are running on Mac OS X,
 please set `GOOS=darwin` before calling `make`:
 
 ```
 $ GOOS=darwin make
 ```
+
 You now should find a `kocho` binary file in your current folder.
 
 ## Configuring Kocho
 
-At first, lets initialize cloudconfig and cloudformation templates. By default
+First, let's initialize cloudconfig and cloudformation templates. By default
 Kocho assumes they are in `templates/`.
 
 ```
@@ -49,7 +50,12 @@ aws-vpc: <vpc>
 aws-keypair: <keypair>
 aws-subnet: <subnet>
 aws-az: <availability zone>
+```
 
+To use CloudFlare for creating DNS records also add:
+
+```
+dns-sevice: cloudflare
 dns-zone: <cloudflare domain>
 ```
 
@@ -65,11 +71,11 @@ export AWS_SECRET_ACCESS_KEY=<aws secret access key>
 export AWS_ACCESS_KEY=<aws access key>
 ```
 
-You also need to put your cloudflare credentials into the environment.
+If you have configured Kocho in the `kocho.yml` to use CloudFlare. You also need to put your CloudFlare credentials into the environment.
 
 ```
 export CLOUDFLARE_EMAIL=<cloudflare email>
-export CLOUDFLARE_TOKEN=<cloudflare token>
+export CLOUDFLARE_TOKEN=<cloudflare api token>
 ```
 
 ## Using Kocho
@@ -90,7 +96,7 @@ Once we created a cluster, we can check what we have using the `list` command.
 kocho list
 ```
 
-We should see something along these lines.
+We should see something along these lines of:
 
 ```
 Name                  Type        Created
