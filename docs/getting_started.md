@@ -6,9 +6,9 @@ of CoreOS clusters with customized versions of Etcd, Fleet and Docker.
 ## Prerequisites
 
  * Have your AWS Access Keys ready
- * If you want to use [CloudFlare](https://www.cloudflare.com), have your CloudFlare Token ready
+ * When running Kocho in a Docker container, [Docker](https://docs.docker.com/engine/installation/) needs to be installed
  * For building you need to have [`builder`](https://github.com/giantswarm/builder) installed
- * When running Kocho in a Docker container, Docker needs to be installed
+ * If you want to use [CloudFlare](https://www.cloudflare.com), have your CloudFlare Token ready
 
 ## Building Kocho
 
