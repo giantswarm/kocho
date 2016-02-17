@@ -39,8 +39,9 @@ aws-az: <az>
 
 ## DNS
 # Configures how to build the dns records in cloudflare
-dns-zone: <your-cloudflare-zone>
-
+# dns-service: cloudflare
+# dns-zone: <your-cloudflare-zone>
+#
 # dns-catchall: *.{{.Stack}}
 # dns-catchall-private: *.{{.Stack}}.private
 # dns-private: {{.Stack}}.private
