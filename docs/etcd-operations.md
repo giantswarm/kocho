@@ -7,7 +7,7 @@ The following guides are for etcd2 and should be performed with care. Make sure 
 To remove a member from the quorum you need its ID. Use `etcdctl member list` on one of the machines to get it:
 
 ```
-$ etcdctl member list | grep "name=$(cat /etc/machine-id)" | cut -f1 -d:
+$ etcdctl member list | grep "name=$(cat /etc/machine-id)" | cut -f1 -d:
 abcdef123456
 ```
 
