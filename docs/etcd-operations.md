@@ -44,13 +44,13 @@ $ etcdctl member remove abcdef123456
 Get the `DISCOVERY_ID` using this command:
 
 ```nohighlight
-cat etcd2.service.d/20-cloudinit.conf
+$ cat etcd2.service.d/20-cloudinit.conf
 ```
 
 Assuming your `DISCOVERY_ID` is `1234567890abcdefg` and the machine ID is `abcdef123456`, execute this `curl` command:
 
 ```nohighlight
-curl -XDELETE https://discovery.etcd.io/1234567890abcdefg/abcdef123456
+$ curl -XDELETE https://discovery.etcd.io/1234567890abcdefg/abcdef123456
 ```
 
 4. Add new member to core members:
@@ -70,8 +70,8 @@ $ export ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380;
 
 # start etcd2
 
-details=$(etcdctl member add $ETCD_NAME http://$private_ipv4:2380);
-eval export `echo "$details" | tail -n-3`;
+$ details=$(etcdctl member add $ETCD_NAME http://$private_ipv4:2380);
+$ eval export `echo "$details" | tail -n-3`;
 
 # stop etcd2
 
