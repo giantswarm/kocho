@@ -1,4 +1,5 @@
-# Slack
+# Slack Integration
+
 Kocho supports Slack notifications. For convenience there is a `kocho slack
 init` command. Alternatively just drop a config file in
 `~/.giantswarm/kocho/slack.conf`. To use another location provide the
@@ -6,7 +7,7 @@ init` command. Alternatively just drop a config file in
 manually, you need to provide the following configuration.  Just replace values
 based on your personal needs.
 
-```
+```json
 {
     "notification_channel": "channel",
     "token": "token",
@@ -14,4 +15,5 @@ based on your personal needs.
 }
 ```
 
-You can obtain a slack token using the Slack webinterface. You need to create a Bot integration.
+You can obtain a slack token using the Slack web user interface.
+You need to create a Bot integration.

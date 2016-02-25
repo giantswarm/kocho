@@ -1,12 +1,12 @@
 # Security Overview
 
-Kocho uses the golang libraries to interact with certain APIs.
+Kocho uses the following golang libraries to interact with certain APIs:
 
-- AWS SDK to interact with the AWS API: https://godoc.org/github.com/aws/aws-sdk-go.
-- Slack library to interact with the Slack API: https://godoc.org/github.com/nlopes/slack
-- Cloudflare library to interact with the Cloudflare API: https://godoc.org/github.com/crackcomm/cloudflare
+- [aws/aws-sdk-go](https://godoc.org/github.com/aws/aws-sdk-go) to interact with the AWS API
+- [nlopes/slack](https://godoc.org/github.com/nlopes/slack) library to interact with the Slack API
+- [crackcomm/cloudflare](https://godoc.org/github.com/crackcomm/cloudflare) to interact with the Cloudflare API
 
-Interacting with the Etcd discovery, plain HTTP requests are done.
+To interact with the Etcd discovery, plain HTTP requests are issued.
 
 ## Risks
 
