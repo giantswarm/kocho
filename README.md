@@ -9,7 +9,7 @@ versions of fleet, etcd, and docker when using
 
 ## Getting Kocho
 
-Download the latest binary: 
+Download the latest release: https://github.com/giantswarm/kocho/releases/latest
 
 Clone the git repository: `git@github.com:giantswarm/kocho.git`
 
