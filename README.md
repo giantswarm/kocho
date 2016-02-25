@@ -11,7 +11,7 @@ versions of fleet, etcd, and docker when using
 
 Download the latest release: https://github.com/giantswarm/kocho/releases/latest
 
-Clone the git repository: `git@github.com:giantswarm/kocho.git`
+Clone the git repository: https://github.com/giantswarm/kocho.git
 
 Download the latest docker image from here: https://hub.docker.com/r/giantswarm/kocho/
 
