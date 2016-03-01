@@ -17,6 +17,8 @@ type CreateFlags struct {
 	FleetVersion     string
 	DockerVersion    string
 	EtcdDiscoveryURL string
+	K8sVersion       string
+	RktVersion       string
 	TemplateDir      string
 
 	// MachineType provides some identifier for the provider to know which type of machine should be used.

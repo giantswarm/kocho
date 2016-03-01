@@ -1,6 +1,6 @@
 #cloud-config
 coreos:
-  update:		
+  update:
     reboot-strategy: off
   etcd2:
     discovery: "{{.EtcdDiscoveryURL}}"
@@ -21,7 +21,7 @@ coreos:
     - name: yochu.service
       command: start
       enable: true
-      content: |            
+      content: |
           [Unit]
           Description=Giant Swarm Yochu
           Wants=network-online.target
@@ -32,7 +32,7 @@ coreos:
           ExecStartPre=/usr/bin/mkdir -p /home/core/bin
           ExecStartPre=/usr/bin/wget --no-verbose https://downloads.giantswarm.io/yochu/{{.YochuVersion}}/yochu -O /home/core/bin/yochu
           ExecStartPre=/usr/bin/chmod +x /home/core/bin/yochu
-          ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --fleet-version={{.FleetVersion}} --etcd-version={{.EtcdVersion}} --docker-version={{.DockerVersion}}
+          ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --fleet-version={{.FleetVersion}} --etcd-version={{.EtcdVersion}} --docker-version={{.DockerVersion}} --rkt-version={{.RktVersion}} --k8s-version={{.K8sVersion}}
           RemainAfterExit=yes
           [Install]
           WantedBy=multi-user.target

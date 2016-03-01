@@ -59,6 +59,8 @@ func (viper *KochoConfiguration) newViperCreateFlags() swarmtypes.CreateFlags {
 		FleetVersion:  viper.GetString("yochu-fleet-version"),
 		EtcdVersion:   viper.GetString("yochu-etcd-version"),
 		DockerVersion: viper.GetString("yochu-docker-version"),
+		RktVersion:    viper.GetString("yochu-rkt-version"),
+		K8sVersion:    viper.GetString("yochu-k8s-version"),
 
 		// Provider interpreted
 		ImageURI:       viper.GetString("image"),

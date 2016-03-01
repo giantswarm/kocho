@@ -1,6 +1,7 @@
 # Kocho
 
-[![Build Status](https://api.travis-ci.org/giantswarm/kocho.svg)](https://travis-ci.org/giantswarm/kocho) [![](https://godoc.org/github.com/giantswarm/kocho?status.svg)](http://godoc.org/github.com/giantswarm/kocho) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
+[![Build Status](https://api.travis-ci.org/giantswarm/kocho.svg)](https://travis-ci.org/giantswarm/kocho) [![](https://godoc.org/github.com/giantswarm/kocho?status.svg)](http://godoc.org/github.com/giantswarm/kocho)
+[![](https://img.shields.io/docker/pulls/giantswarm/kocho.svg)](http://hub.docker.com/giantswarm/kocho) [![IRC Channel](https://img.shields.io/badge/irc-%23giantswarm-blue.svg)](https://kiwiirc.com/client/irc.freenode.net/#giantswarm)
 
 Kocho provides a set of mechanisms to bootstrap AWS nodes that must follow a
 specific configuration with CoreOS. It sets up fleet meta-data, and patched
