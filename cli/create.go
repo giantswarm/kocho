@@ -47,6 +47,8 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("yochu-docker-version", "1.6.2", "version to use when provisioning docker binaries")
 	flagset.String("yochu-fleet-version", "v0.11.3-gs-2", "version to use when provisioning fleetd/fleetctl binaries")
 	flagset.String("yochu-etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
+	flagset.String("yochu-k8s-version", "v1.1.8", "version to use when provisioning k8s binaries")
+	flagset.String("yochu-rkt-version", "v1.1.0", "version to use when provisioning rkt binaries")
 
 	// AWS Provider specific
 	flagset.String("aws-keypair", "", "Keypair to use for AWS machines")
