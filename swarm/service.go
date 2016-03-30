@@ -46,10 +46,16 @@ func (srv *Service) Create(name string, providerType ProviderType, flags swarmty
 		}
 	}
 
-	cfg, err := createCloudConfig(flags)
+	var cfg string
+	if flags.UseIgnition {
+		cfg, err = createIgnitionConfig(flags)
+	} else {
+		cfg, err = createCloudConfig(flags)
+	}
 	if err != nil {
 		return nil, err
 	}
+
 	swarm, err := p.CreateSwarm(name, flags, cfg)
 	if err != nil {
 		return nil, err

@@ -67,6 +67,8 @@ func (viper *KochoConfiguration) newViperCreateFlags() swarmtypes.CreateFlags {
 		MachineType:    viper.GetString("machine-type"),
 		CertificateURI: viper.GetString("certificate"),
 
+		UseIgnition: viper.GetBool("use-ignition"),
+
 		AWSCreateFlags: &swarmtypes.AWSCreateFlags{
 			KeypairName:      viper.GetString("aws-keypair"),
 			Subnet:           viper.GetString("aws-subnet"),

@@ -1,0 +1,49 @@
+ignition_version: 1
+systemd:
+  units:
+    - name: update-engine.service
+      enable: false
+      mask: true
+    - name: locksmithd.service
+      enable: false
+      mask: true
+    - name: etcd2.service
+      enable: true
+      dropins:
+       - name: 30-etcd2-giantswarm.conf
+         contents: |
+            [Service]
+            Environment="ETCD_DISCOVERY={{.EtcdDiscoveryURL}}"
+            Environment="ETCD_ADVERTISE_CLIENT_URLS=http://$private_ipv4:2379"
+            Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$private_ipv4:2380"
+            Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
+            Environment="ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380,http://127.0.0.1:2380"
+            Environment="ETCD_ELECTION_TIMEOUT=5000"
+    - name: fleet.service
+      enable: true
+      dropins:
+        - name: 30-fleet-giantswarm.conf
+          contents: |
+            [Service]
+            Environment="FLEET_ETCD_SERVERS={{.EtcdPeers}}"
+            Environment="FLEET_METADATA=role-worker=true,stack-compute=true,{{.Tags}}"
+            Environment="FLEET_DISABLE_ENGINE=true"
+    {{if .YochuVersion}}
+    - name: yochu.service
+      enable: true
+      contents: |
+          [Unit]
+          Description=Giant Swarm Yochu
+          Wants=network-online.target
+          After=network-online.target
+          Before=multi-user.target
+          [Service]
+          Type=oneshot
+          ExecStartPre=/usr/bin/mkdir -p /home/core/bin
+          ExecStartPre=/usr/bin/wget --no-verbose https://downloads.giantswarm.io/yochu/{{.YochuVersion}}/yochu -O /home/core/bin/yochu
+          ExecStartPre=/usr/bin/chmod +x /home/core/bin/yochu
+          ExecStart=/home/core/bin/yochu setup -v -d --start-daemons=true --fleet-version={{.FleetVersion}} --etcd-version={{.EtcdVersion}} --docker-version={{.DockerVersion}} --rkt-version={{.RktVersion}} --k8s-version={{.K8sVersion}}
+          RemainAfterExit=yes
+          [Install]
+          WantedBy=multi-user.target
+      {{end}}

@@ -50,6 +50,8 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("yochu-k8s-version", "v1.1.8", "version to use when provisioning k8s binaries")
 	flagset.String("yochu-rkt-version", "v1.1.0", "version to use when provisioning rkt binaries")
 
+	flagset.Bool("use-ignition", false, "use ignition configuration templates")
+
 	// AWS Provider specific
 	flagset.String("aws-keypair", "", "Keypair to use for AWS machines")
 	flagset.String("aws-vpc", "", "VPC to use for new AWS machines")
