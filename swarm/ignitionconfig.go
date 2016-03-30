@@ -138,8 +138,7 @@ func parseIgnitionConfigTemplate(ignitionConfigTemplatePath string, cfg interfac
 	}
 
 	var tmpl *template.Template
-	//TODO: (hector)
-	tmpl, err = template.New("cloud-config").Parse(string(templateData))
+	tmpl, err = template.New("ignition-config").Parse(string(templateData))
 	if err != nil {
 		return "", errgo.Mask(err)
 	}

@@ -28,6 +28,8 @@ certificate: <insert ssl certificate arn here>
 # yochu-k8s-version: <k8s version>
 # yochu-rkt-version: <rkt version>
 
+# Use ignition
+# use-ignition: true
 
 ## AWS
 # Default values for the AWS provider (could also be provided via --aws-* flags)
