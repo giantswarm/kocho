@@ -97,10 +97,18 @@ godoc: all
 
 fmt:
 	gofmt -l -w .
-
-bin-dist: all
-	mkdir -p bin-dist/
-	cp -f README.md bin-dist/
-	cp -f LICENSE bin-dist/
-	cp $(PROJECT) bin-dist/
-	cd bin-dist/ && tar czf $(PROJECT).$(VERSION).tar.gz *
+	
+bin-dist: $(SOURCE) VERSION cli/templates_bindata.go
+	# Remove any old bin-dist or build directories
+	rm -rf bin-dist build
+	
+	# Build for all supported OSs
+	for OS in darwin linux; do \
+		rm -f $(BIN); \
+		GOOS=$$OS make $(BIN); \
+		mkdir -p build/$$OS bin-dist; \
+		cp README.md build/$$OS/; \
+		cp LICENSE build/$$OS/; \
+		cp $(BIN) build/$$OS/; \
+		tar czf bin-dist/$(BIN).$(VERSION).$$OS.tar.gz -C build/$$OS .; \
+	done
