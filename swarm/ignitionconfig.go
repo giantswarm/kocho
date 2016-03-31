@@ -40,9 +40,9 @@ type secondaryIgnitionConfig struct {
 
 // ClusterBootstrap
 const (
-	primaryIgnitionConfigTemplateName    = "/ignition/primary-ignition.tmpl"
-	secondaryIgnitionConfigTemplateName  = "/ignition/secondary-ignition.tmpl"
-	standaloneIgnitionConfigTemplateName = "/ignition/standalone-ignition.tmpl"
+	primaryIgnitionConfigTemplateName    = "primary-ignition.tmpl"
+	secondaryIgnitionConfigTemplateName  = "secondary-ignition.tmpl"
+	standaloneIgnitionConfigTemplateName = "standalone-ignition.tmpl"
 )
 
 func createIgnitionConfig(flags swarmtypes.CreateFlags) (string, error) {

@@ -9,12 +9,8 @@ import (
 )
 
 var (
-	templatesDir string = "default-templates"
-	templates           = []string{
-		"primary-cloudconfig.tmpl",
-		"secondary-cloudconfig.tmpl",
-		"standalone-cloudconfig.tmpl",
-
+	templatesDir            string = "default-templates"
+	cloudFormationTemplates        = []string{
 		"primary-cloudformation.tmpl",
 		"secondary-cloudformation.tmpl",
 		"standalone-cloudformation.tmpl",
@@ -23,9 +19,20 @@ var (
 		"secondary-parameters.tmpl",
 		"standalone-parameters.tmpl",
 	}
+	cloudConfigTemplates = []string{
+		"primary-cloudconfig.tmpl",
+		"secondary-cloudconfig.tmpl",
+		"standalone-cloudconfig.tmpl",
+	}
+	ignitionTemplates = []string{
+		"primary-ignition.tmpl",
+		"secondary-ignition.tmpl",
+		"standalone-ignition.tmpl",
+	}
 
 	flagTemplateDir string
 	flagForce       bool
+	flagUseIgnition bool
 	cmdTemplateInit = &Command{
 		Name:        "template-init",
 		Description: "Initialise templates",
@@ -37,6 +44,7 @@ var (
 func init() {
 	cmdTemplateInit.Flags.StringVar(&flagTemplateDir, "template-dir", "templates", "directory to write templates to")
 	cmdTemplateInit.Flags.BoolVar(&flagForce, "force", false, "overwriting existing templates")
+	cmdTemplateInit.Flags.BoolVar(&flagUseIgnition, "use-ignition", false, "use ignition configuration templates")
 }
 
 func runTemplateInit(args []string) (exit int) {
@@ -47,6 +55,13 @@ func runTemplateInit(args []string) (exit int) {
 		}
 	}
 
+	templates := make([]string, 0)
+	templates = append(templates, cloudFormationTemplates...)
+	if flagUseIgnition {
+		templates = append(templates, ignitionTemplates...)
+	} else {
+		templates = append(templates, cloudConfigTemplates...)
+	}
 	// Write out each template file
 	for _, template := range templates {
 		fileData, err := Asset(path.Join(templatesDir, template))
