@@ -29,6 +29,7 @@ certificate: <insert ssl certificate arn here>
 # yochu-rkt-version: <rkt version>
 
 # Use ignition
+# Information about ignition is available here: https://coreos.com/ignition/docs/latest/what-is-ignition.html
 # use-ignition: true
 
 ## AWS

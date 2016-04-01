@@ -89,8 +89,8 @@ func runCreate(args []string) (exit int) {
 		return exitError("couldn't create swarm: --image must be provided")
 	}
 
-	if flags.ImageURI == awsEuWest1CoreOS && flags.UseIgnition {
-		return exitError(fmt.Sprintf("couldn't create swarm: --use-ignition requires a recent CoreOS AMI than '%s'", awsEuWest1CoreOS))
+	if flags.UseIgnition && flags.ImageURI == awsEuWest1CoreOS {
+		return exitError(fmt.Sprintf("couldn't create swarm: --use-ignition requires a more recent CoreOS AMI than '%s'", awsEuWest1CoreOS))
 	}
 
 	if len(args) == 0 {

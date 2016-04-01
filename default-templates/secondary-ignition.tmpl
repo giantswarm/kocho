@@ -10,7 +10,7 @@ systemd:
     - name: etcd2.service
       enable: true
       dropins:
-       - name: 30-etcd2-giantswarm.conf
+       - name: 10-etcd2-kocho.conf
          contents: |
             [Service]
             Environment="ETCD_DISCOVERY={{.EtcdDiscoveryURL}}"
@@ -22,7 +22,7 @@ systemd:
     - name: fleet.service
       enable: true
       dropins:
-        - name: 30-fleet-giantswarm.conf
+        - name: 10-fleet-kocho.conf
           contents: |
             [Service]
             Environment="FLEET_ETCD_SERVERS={{.EtcdPeers}}"
