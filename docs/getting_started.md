@@ -67,7 +67,7 @@ To make Slack notifications work, put the slack configuration into `~/.giantswar
 Further, make sure you have your AWS credentials in your environment.
 
 ```
-export AWS_SECRET_ACCESS_KEY=<aws secret access key>
+export AWS_SECRET_KEY=<aws secret access key>
 export AWS_ACCESS_KEY=<aws access key>
 ```
 
