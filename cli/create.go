@@ -11,6 +11,8 @@ import (
 	"github.com/giantswarm/kocho/swarm"
 )
 
+const awsEuWest1CoreOS = "ami-5f2f5528"
+
 var (
 	cmdCreate = &Command{
 		Name:        "create",
@@ -37,7 +39,7 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("etcd-discovery-url", "", "etcd discovery url for a secondary swarm is connecting to")
 	flagset.String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
 
-	awsEuWest1CoreOS := "ami-5f2f5528" // CoreOS Stable 681.2.0 (HVM eu-west-1)
+	 // CoreOS Stable 681.2.0 (HVM eu-west-1)
 	flagset.String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
 	flagset.String("certificate", "", "certificate ARN to use to create aws cluster")
 	flagset.String("machine-type", "m3.large", "machine type to use, e.g. m3.large for AWS")
@@ -85,6 +87,10 @@ func runCreate(args []string) (exit int) {
 	}
 	if flags.ImageURI == "" {
 		return exitError("couldn't create swarm: --image must be provided")
+	}
+
+	if flags.ImageURI == awsEuWest1CoreOS && flags.UseIgnition {
+		return exitError(fmt.Sprintf("couldn't create swarm: --use-ignition requires a recent CoreOS AMI than '%s'", awsEuWest1CoreOS))
 	}
 
 	if len(args) == 0 {
