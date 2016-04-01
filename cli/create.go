@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/kocho/swarm"
 )
 
+// CoreOS Stable 681.2.0 (HVM eu-west-1)
 const awsEuWest1CoreOS = "ami-5f2f5528"
 
 var (
@@ -39,7 +40,6 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("etcd-discovery-url", "", "etcd discovery url for a secondary swarm is connecting to")
 	flagset.String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
 
-	 // CoreOS Stable 681.2.0 (HVM eu-west-1)
 	flagset.String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
 	flagset.String("certificate", "", "certificate ARN to use to create aws cluster")
 	flagset.String("machine-type", "m3.large", "machine type to use, e.g. m3.large for AWS")
