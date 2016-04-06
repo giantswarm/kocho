@@ -10,22 +10,29 @@ systemd:
     - name: etcd2.service
       enable: true
       dropins:
-       - name: 10-etcd2-kocho.conf
+       - name: 30-etcd2-kocho.conf
          contents: |
-            [Service]
-            Environment="ETCD_DISCOVERY={{.DiscoveryUrl}}"
-            Environment="ETCD_ADVERTISE_CLIENT_URLS=http://$private_ipv4:2379"
-            Environment="ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$private_ipv4:2380"
-            Environment="ETCD_LISTEN_CLIENT_URLS=http://0.0.0.0:2379"
-            Environment="ETCD_LISTEN_PEER_URLS=http://$private_ipv4:2380,http://127.0.0.1:2380"
-            Environment="ETCD_ELECTION_TIMEOUT=5000"
+           [Unit]
+           Requires=coreos-metadata.service
+           After=coreos-metadata.service
+
+           [Service]
+           EnvironmentFile=/run/metadata/coreos
+           ExecStart=
+           ExecStart=/usr/bin/etcd2 \
+               --discovery={{.DiscoveryUrl}} \
+               --advertise-client-urls=http://${COREOS_EC2_IPV4_LOCAL}:2379 \
+               --initial-advertise-peer-urls=http://${COREOS_EC2_IPV4_LOCAL}:2380 \
+               --listen-client-urls=http://0.0.0.0:2379 \
+               --listen-peer-urls="http://${COREOS_EC2_IPV4_LOCAL}:2380,http://127.0.0.1:2380" \
+               --election-timeout=5000
     - name: fleet.service
       enable: true
       dropins:
-        - name: 10-fleet-kocho.conf
+        - name: 30-fleet-kocho.conf
           contents: |
             [Service]
-            Environment="FLEET_ETCD_SERVERS=http://$private_ipv4:2379"
+            Environment="FLEET_ETCD_SERVERS=http://$COREOS_PRIVATE_IPV4:2379"
             Environment="FLEET_METADATA=role-core=true,{{.Tags}}"
             Environment="FLEET_DISABLE_ENGINE=false"
     {{if .YochuVersion}}
