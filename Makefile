@@ -55,6 +55,8 @@ deps:
 	@GOPATH=$(GOPATH) builder go get github.com/ryanuber/columnize
 	@GOPATH=$(GOPATH) builder go get github.com/spf13/viper
 	@GOPATH=$(GOPATH) builder go get github.com/spf13/pflag
+	@GOPATH=$(GOPATH) builder go get github.com/coreos/ignition/config/v1/types
+	@GOPATH=$(GOPATH) builder go get gopkg.in/yaml.v2
 
 	#
 	# Fetch public dependencies via `go get`

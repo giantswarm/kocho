@@ -33,6 +33,9 @@ type CreateFlags struct {
 
 	// Provider Specific Structs
 	*AWSCreateFlags
+
+	// Use ignition as bootstrap mechanism for CoreOS
+	UseIgnition bool
 }
 
 // AWSCreateFlags describes AWS specific flags for creating a swarm.

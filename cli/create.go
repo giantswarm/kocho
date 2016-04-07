@@ -11,6 +11,9 @@ import (
 	"github.com/giantswarm/kocho/swarm"
 )
 
+// CoreOS Stable 681.2.0 (HVM eu-west-1)
+const awsEuWest1CoreOS = "ami-5f2f5528"
+
 var (
 	cmdCreate = &Command{
 		Name:        "create",
@@ -37,7 +40,6 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("etcd-discovery-url", "", "etcd discovery url for a secondary swarm is connecting to")
 	flagset.String("template-dir", "templates", "directory to use for reading templates (see template-init command)")
 
-	awsEuWest1CoreOS := "ami-5f2f5528" // CoreOS Stable 681.2.0 (HVM eu-west-1)
 	flagset.String("image", awsEuWest1CoreOS, "image version that should be used to create a swarm")
 	flagset.String("certificate", "", "certificate ARN to use to create aws cluster")
 	flagset.String("machine-type", "m3.large", "machine type to use, e.g. m3.large for AWS")
@@ -49,6 +51,8 @@ func registerCreateFlags(flagset *pflag.FlagSet) {
 	flagset.String("yochu-etcd-version", "v2.1.2-gs-1", "version to use when provisioning etcd/etcdctl binaries")
 	flagset.String("yochu-k8s-version", "v1.1.8", "version to use when provisioning k8s binaries")
 	flagset.String("yochu-rkt-version", "v1.1.0", "version to use when provisioning rkt binaries")
+
+	flagset.Bool("use-ignition", false, "use ignition configuration templates")
 
 	// AWS Provider specific
 	flagset.String("aws-keypair", "", "Keypair to use for AWS machines")
@@ -83,6 +87,10 @@ func runCreate(args []string) (exit int) {
 	}
 	if flags.ImageURI == "" {
 		return exitError("couldn't create swarm: --image must be provided")
+	}
+
+	if flags.UseIgnition && flags.ImageURI == awsEuWest1CoreOS {
+		return exitError(fmt.Sprintf("couldn't create swarm: --use-ignition requires a more recent CoreOS AMI than '%s'", awsEuWest1CoreOS))
 	}
 
 	if len(args) == 0 {
