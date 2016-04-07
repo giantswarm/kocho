@@ -20,7 +20,7 @@ systemd:
            EnvironmentFile=/run/metadata/coreos
            ExecStart=
            ExecStart=/usr/bin/etcd2 \
-               --discovery={{.DiscoveryUrl}} \
+               --discovery={{.EtcdDiscoveryURL}} \
                --advertise-client-urls=http://${COREOS_EC2_IPV4_LOCAL}:2379 \
                --initial-advertise-peer-urls=http://${COREOS_EC2_IPV4_LOCAL}:2380 \
                --listen-client-urls=http://0.0.0.0:2379 \
